@@ -15,3 +15,14 @@ module.exports.TELEGRAM = (serverless) => ({
     TELEGRAM_OWNER_CHAT_ID: '<Please fill in this information>',
   }
 });
+
+module.exports.NAVER = (serverless) => ({
+  dev: {
+    CLIENT_ID: '<Please fill in this information>',
+    CLIENT_SECRET: '<Please fill in this information>',
+  },
+  production: {
+    CLIENT_ID: '<Please fill in this information>',
+    CLIENT_SECRET: '<Please fill in this information>',
+  }
+});

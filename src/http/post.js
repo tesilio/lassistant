@@ -10,6 +10,10 @@ const parse_mode = 'Markdown';
 /**
 help - 도움말
 q - 검색
+ko - 한국어로 번역
+ja - 일본어로 번역
+en - 영어로 번역
+shorturl - URL 단축
 */
 const messageEntities = {
   botCommands: {
@@ -36,12 +40,45 @@ const messageEntities = {
       return commands.search(message, true);
     },
 
+    '/ko': async message => {
+      return commands.translation('ko', message, true);
+    },
+
+    [`/ko${TELEGRAM_BOT_NAME}`]: async message => {
+      return commands.translation('ko', message, true);
+    },
+
+    '/en': async message => {
+      return commands.translation('en', message, true);
+    },
+
+    [`/en${TELEGRAM_BOT_NAME}`]: async message => {
+      return commands.translation('en', message, true);
+    },
+
+    '/ja': async message => {
+      return commands.translation('ja', message, true);
+    },
+
+    [`/ja${TELEGRAM_BOT_NAME}`]: async message => {
+      return commands.translation('ja', message, true);
+    },
+
+    '/shorturl': async message => {
+      return commands.shorturl(message, true);
+    },
+
+    [`/shorturl${TELEGRAM_BOT_NAME}`]: async message => {
+      return commands.shorturl(message, true);
+    },
+
+
     '/logging': async message => {
-      return commands.logging(message);
+      return commands.logging();
     },
 
     [`/logging${TELEGRAM_BOT_NAME}`]: async message => {
-      return commands.logging(message, true);
+      return commands.logging();
     },
 
     /**
@@ -89,7 +126,12 @@ const commands = {
    */
   help: async (message, disable_notification = false) => {
     let text = `
-/q - 검색합니다.
+/help - 도움말
+/q - 검색합니다. 예) /q test
+/ko - 한국어로 번역합니다. 예) /ko test
+/ja - 일본어로 번역합니다. 예) /ja 테스트
+/en - 영어로 번역합니다. 예) /en 테스트
+/shorturl - 긴 길이의 URL을 짧게 바꿔줍니다. 예) /shorturl https://ko.wikipedia.org/wiki/URL
             `;
     return BOT.sendMessage(message.chat.id, text, {
       disable_notification
@@ -117,6 +159,63 @@ ${content}
       });
     } catch (e) {
       console.error(`commands.search() Error: ${e}`);
+      throw e;
+    }
+  },
+
+  /**
+   * 번역
+   * @param target {string}
+   * @param message
+   * @param disable_notification
+   * @returns {Promise<*>}
+   */
+  translation: async (target, message, disable_notification = false) => {
+    try {
+      const query = message.text.replace(/^(\/..\s)|^(\/..)/, '');
+      let text = 'None!';
+      if (query !== '') {
+        const source = await utils.detectLanguage(query);
+        const content = await utils.translation(source, target, query);
+        text = `
+*${source}(감지됨) -> ${target}*
+
+${content}
+            `;
+      }
+      return BOT.sendMessage(message.chat.id, text, {
+        parse_mode,
+        disable_notification,
+      });
+    } catch (e) {
+      console.error(`commands.translation() Error: ${e}`);
+      throw e;
+    }
+  },
+
+  /**
+   * 단축 url
+   * @param message
+   * @param disable_notification
+   * @returns {Promise<*>}
+   */
+  shorturl: async (message, disable_notification = false) => {
+    try {
+      const query = message.text.replace(/^(\/shorturl\s)|^(\/shorturl)/, '');
+      let text = 'None!';
+      if (query !== '') {
+        const url = await utils.shorturl(query);
+        text = `
+ShortURL: ${url}
+QR: ${url}.qr
+            `;
+      }
+      return BOT.sendMessage(message.chat.id, text, {
+        parse_mode,
+        disable_notification,
+      });
+    } catch (e) {
+      console.error(`commands.shorturl() Error: ${e}`);
       throw e;
     }
   },
