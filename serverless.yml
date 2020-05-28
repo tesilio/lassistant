@@ -1,0 +1,59 @@
+service: lassistant
+
+custom:
+  TELEGRAM: ${file(./config/config.js):TELEGRAM}
+  schedules:  # info: Health Checker!
+    dev: false
+    production:
+      rate: rate(4 minutes)
+      enabled: true
+      description: "Health Checker"
+      input:
+        healthCheck: true
+
+# 제공자
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'ap-northeast-2'}
+  memorySize: 128 # optional, in MB, default is 1024
+  timeout: 10 # optional, in seconds, default is 10
+  versionFunctions: false # optional, default is true
+#  role: arn:aws:iam::444682503693:role/ubapi-bot-lambda-role
+
+  environment:
+    REGION: ${opt:region, 'ap-northeast-2'}
+    STAGE: ${self:provider.stage}
+    TELEGRAM_TOKEN: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_TOKEN}
+    TELEGRAM_CHAT_ID: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_CHAT_ID}
+    TELEGRAM_OWNER_CHAT_ID: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_OWNER_CHAT_ID}
+    TELEGRAM_BOT_NAME: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_BOT_NAME}
+
+package:
+  individually: true
+  exclude:
+    - .idea/**
+    - package-lock.json
+    - package.json
+    - node_modules/**
+    - test/**
+    - .gitmodules
+    - .git/**
+
+functions:
+  webHook:  # Index (web hook)
+    handler: src/http/index.handler
+    description: Web Hook Handling
+    package:
+      exclude:
+        - src/**
+      include:
+        - node_modules/**
+        - lib/**
+        - src/http/**
+    events:
+      - http:
+          path: /
+          method: any
+          cors: true
