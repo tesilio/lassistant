@@ -3,6 +3,7 @@ service: lassistant
 custom:
   TELEGRAM: ${file(./config/config.js):TELEGRAM}
   NAVER: ${file(./config/config.js):NAVER}
+  KAKAO: ${file(./config/config.js):KAKAO}
   schedules:  # info: Health Checker!
     dev: false
     production:
@@ -32,6 +33,7 @@ provider:
     TELEGRAM_BOT_NAME: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_BOT_NAME}
     NAVER_CLIENT_ID: ${self:custom.NAVER.${self:provider.stage}.NAVER_CLIENT_ID}
     NAVER_CLIENT_SECRET: ${self:custom.NAVER.${self:provider.stage}.NAVER_CLIENT_SECRET}
+    KAKAO_REST_API_KEY: ${self:custom.KAKAO.${self:provider.stage}.KAKAO_REST_API_KEY}
 
 package:
   individually: true

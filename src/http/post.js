@@ -14,6 +14,7 @@ ko - 한국어로 번역
 ja - 일본어로 번역
 en - 영어로 번역
 shorturl - URL 단축
+place - 키워드로 장소 검색
 */
 const messageEntities = {
   botCommands: {
@@ -72,6 +73,13 @@ const messageEntities = {
       return commands.shorturl(message, true);
     },
 
+    '/place': async message => {
+      return commands.place(message, true);
+    },
+
+    [`/place${TELEGRAM_BOT_NAME}`]: async message => {
+      return commands.place(message, true);
+    },
 
     '/logging': async message => {
       return commands.logging();
@@ -132,6 +140,7 @@ const commands = {
 /ja - 일본어로 번역합니다. 예) /ja 테스트
 /en - 영어로 번역합니다. 예) /en 테스트
 /shorturl - 긴 길이의 URL을 짧게 바꿔줍니다. 예) /shorturl https://ko.wikipedia.org/wiki/URL
+/place - 장소검색을 합니다. 예) /place 강남구청
             `;
     return BOT.sendMessage(message.chat.id, text, {
       disable_notification
@@ -216,6 +225,36 @@ QR: ${url}.qr
       });
     } catch (e) {
       console.error(`commands.shorturl() Error: ${e}`);
+      throw e;
+    }
+  },
+
+  /**
+   * 키워드로 장소검색
+   * @param message
+   * @param disable_notification
+   * @returns {Promise<*>}
+   */
+  place: async (message, disable_notification = false) => {
+    try {
+      const query = message.text.replace(/^(\/place\s)|^(\/place)/, '');
+      let text = 'None!';
+      if (query !== '') {
+        const places = await utils.place(query);
+        if (places.length > 0) {
+          const textArray = [];
+          places.map(place => {
+            textArray.push(`- [${place.place_name}](${place.place_url}): ${place.road_address_name}(${place.address_name})`);
+          });
+          text = textArray.join('\n');
+        }
+      }
+      return BOT.sendMessage(message.chat.id, text, {
+        parse_mode,
+        disable_notification,
+      });
+    } catch (e) {
+      console.error(`commands.place() Error: ${e}`);
       throw e;
     }
   },

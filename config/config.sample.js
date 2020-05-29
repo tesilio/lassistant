@@ -26,3 +26,12 @@ module.exports.NAVER = (serverless) => ({
     CLIENT_SECRET: '<Please fill in this information>',
   }
 });
+
+module.exports.KAKAO = (serverless) => ({
+  dev: {
+    KAKAO_REST_API_KEY: '<Please fill in this information>',
+  },
+  production: {
+    KAKAO_REST_API_KEY: '<Please fill in this information>',
+  }
+});
