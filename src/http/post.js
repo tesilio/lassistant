@@ -8,14 +8,15 @@ const parse_mode = 'Markdown';
 
 
 /**
-help - 도움말
-q - 검색
-ko - 한국어로 번역
-ja - 일본어로 번역
-en - 영어로 번역
-shorturl - URL 단축
-place - 키워드로 장소 검색
-*/
+ help - 도움말
+ q - 검색
+ ko - 한국어로 번역
+ ja - 일본어로 번역
+ en - 영어로 번역
+ shorturl - URL 단축
+ place - 키워드로 장소 검색
+ wt - 9시간 기준 월별 근무 시간 계산
+ */
 const messageEntities = {
   botCommands: {
     '/start': async message => {
@@ -81,6 +82,14 @@ const messageEntities = {
       return commands.place(message, true);
     },
 
+    '/wt': async message => {
+      return commands.wt(message);
+    },
+
+    [`/wt${TELEGRAM_BOT_NAME}`]: async message => {
+      return commands.wt(message, true);
+    },
+
     '/logging': async message => {
       return commands.logging();
     },
@@ -141,9 +150,15 @@ const commands = {
 /en - 영어로 번역합니다. 예) /en 테스트
 /shorturl - 긴 길이의 URL을 짧게 바꿔줍니다. 예) /shorturl https://ko.wikipedia.org/wiki/URL
 /place - 장소검색을 합니다. 예) /place 강남구청
-            `;
+/wt - 9시간 기준 월별 근무 시간을 계산합니다. 예) /wt 35:24 3 1
+  - 35:24 -> 이번 달 근무 했던 시간:분
+  - 3 -> 이번달 총 휴무, 공휴일 수
+  - 1 -> 이번달 중 앞으로 남은 총 휴무, 공휴일 수
+  - 재택 근무는 근무 시간에 임의로 더해 주세요!
+   `;
     return BOT.sendMessage(message.chat.id, text, {
-      disable_notification
+      disable_notification,
+      disable_web_page_preview: true,
     });
   },
 
@@ -260,6 +275,36 @@ QR: ${url}.qr
   },
 
   /**
+   * 9시간 근무시간 계산기
+   * @param message
+   * @param disable_notification
+   * @returns {Promise<unknown>}
+   */
+  wt: async (message, disable_notification = false) => {
+    try {
+      const query = message.text.replace(/^(\/wt\s)|^(\/wt)/, '');
+      let text = 'Nope!';
+      if (query !== '') {
+        try {
+          text = await utils.workingTimeCalculator(query);
+        } catch (e) {
+          return BOT.sendMessage(message.chat.id, 'Invalid Request!', {
+            parse_mode,
+            disable_notification,
+          });
+        }
+      }
+      return BOT.sendMessage(message.chat.id, text, {
+        parse_mode,
+        disable_notification,
+      });
+    } catch (e) {
+      console.error(`commands.wt() Error: ${e}`);
+      throw e;
+    }
+  },
+
+  /**
    * logging 커맨드 함수
    * @returns {Promise<*>}
    */
@@ -339,7 +384,6 @@ const post = async event => {
           }
           await Promise.all(promiseList);
         }
-
       }
     }
 

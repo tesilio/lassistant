@@ -34,6 +34,9 @@ provider:
     NAVER_CLIENT_ID: ${self:custom.NAVER.${self:provider.stage}.NAVER_CLIENT_ID}
     NAVER_CLIENT_SECRET: ${self:custom.NAVER.${self:provider.stage}.NAVER_CLIENT_SECRET}
     KAKAO_REST_API_KEY: ${self:custom.KAKAO.${self:provider.stage}.KAKAO_REST_API_KEY}
+    LOCALE: 'ko-KR'
+    TIMEZONE: 'Asia/Seoul'
+    TZ: 'Asia/Seoul'
 
 package:
   individually: true
