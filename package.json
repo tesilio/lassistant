@@ -9,10 +9,10 @@
   "author": "lodcoco@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.19.2",
-    "cheerio": "^1.0.0-rc.3",
-    "moment": "^2.26.0",
-    "moment-timezone": "^0.5.31",
-    "node-telegram-bot-api": "^0.50.0"
+    "axios": "^0.21.1",
+    "cheerio": "^1.0.0-rc.6",
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.33",
+    "node-telegram-bot-api": "^0.53.0"
   }
 }
