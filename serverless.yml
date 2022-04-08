@@ -4,7 +4,7 @@ custom:
   TELEGRAM: ${file(./config/config.js):TELEGRAM}
   NAVER: ${file(./config/config.js):NAVER}
   KAKAO: ${file(./config/config.js):KAKAO}
-  schedules:  # info: Health Checker!
+  schedules: # info: Health Checker!
     dev: false
     production:
       rate: rate(4 minutes)
@@ -22,7 +22,7 @@ provider:
   memorySize: 128 # optional, in MB, default is 1024
   timeout: 10 # optional, in seconds, default is 10
   versionFunctions: false # optional, default is true
-#  role: arn:aws:iam::444682503693:role/ubapi-bot-lambda-role
+  #  role: arn:aws:iam::444682503693:role/ubapi-bot-lambda-role
 
   environment:
     REGION: ${opt:region, 'ap-northeast-2'}
@@ -50,7 +50,7 @@ package:
     - .git/**
 
 functions:
-  webHook:  # Index (web hook)
+  webHook: # Index (web hook)
     handler: src/http/index.handler
     description: Web Hook Handling
     package:
@@ -65,3 +65,18 @@ functions:
           path: /
           method: any
           cors: true
+
+  dailyNews: # 매일 아침 뉴스
+    handler: src/shedule/dailyNews.handler
+    description: DailyNews Scheduler
+    package:
+      exclude:
+        - src/**
+      include:
+        - node_modules/**
+        - lib/**
+        - src/schedule/**
+    events:
+      - schedule:
+          rate: cron(0 22 * * ? *)
+          enabled: true
