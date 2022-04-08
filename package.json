@@ -9,7 +9,7 @@
   "author": "lodcoco@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "cheerio": "^1.0.0-rc.6",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
