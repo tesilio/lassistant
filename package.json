@@ -12,7 +12,7 @@
     "axios": "^0.21.4",
     "cheerio": "^1.0.0-rc.6",
     "iconv-lite": "^0.6.3",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "moment-timezone": "^0.5.33",
     "node-telegram-bot-api": "^0.53.0"
   }
