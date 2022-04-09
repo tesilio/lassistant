@@ -22,7 +22,6 @@ provider:
   memorySize: 128 # optional, in MB, default is 1024
   timeout: 10 # optional, in seconds, default is 10
   versionFunctions: false # optional, default is true
-  #  role: arn:aws:iam::444682503693:role/ubapi-bot-lambda-role
 
   environment:
     REGION: ${opt:region, 'ap-northeast-2'}
@@ -67,7 +66,7 @@ functions:
           cors: true
 
   dailyNews: # 매일 아침 뉴스
-    handler: src/shedule/dailyNews.handler
+    handler: src/schedule/dailyNews.handler
     description: DailyNews Scheduler
     package:
       exclude:
