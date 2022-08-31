@@ -13,7 +13,7 @@
     "cheerio": "^1.0.0-rc.6",
     "iconv-lite": "^0.6.3",
     "moment": "^2.29.1",
-    "moment-timezone": "^0.5.33",
+    "moment-timezone": "^0.5.35",
     "node-telegram-bot-api": "^0.53.0"
   }
 }
