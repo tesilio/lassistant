@@ -31,3 +31,14 @@ curl https://api.telegram.org/bot<token>/setWebhook
 # 혹은
 node setWebhook
 ```
+
+## Function invoke
+
+```shell
+yarn run sls invoke local --function dailyNews -s dev
+```
+
+## Serverless offline
+```shell
+yarn run sls offline -s dev
+```

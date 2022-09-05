@@ -1,7 +1,5 @@
-'use strict';
+import * as utils from '../../lib/utils';
 
-
-const utils = require('../../lib/utils');
 const BOT = utils.bot();
 const TELEGRAM_BOT_NAME = process.env.TELEGRAM_BOT_NAME;
 const parse_mode = 'Markdown';
@@ -17,85 +15,45 @@ const parse_mode = 'Markdown';
  place - 키워드로 장소 검색
  wt - 9시간 기준 월별 근무 시간 계산
  */
-const messageEntities = {
+const messageEntities: any = {
   botCommands: {
-    '/start': async message => {
+    '/start': async (message: any) => {
       let text = `
 반갑습니다. /help 명령어로 제가 뭘 할 수 있는지 알아보세요.
             `;
       return BOT.sendMessage(message.chat.id, text);
     },
 
-    '/help': async message => {
+    '/help': async (message: any) => {
       return commands.help(message);
     },
 
-    [`/help${TELEGRAM_BOT_NAME}`]: async message => {
+    [`/help${TELEGRAM_BOT_NAME}`]: async (message: any) => {
       return commands.help(message, true);
     },
 
-    '/q': async message => {
-      return commands.search(message, true);
-    },
-
-    [`/q${TELEGRAM_BOT_NAME}`]: async message => {
-      return commands.search(message, true);
-    },
-
-    '/ko': async message => {
-      return commands.translation('ko', message, true);
-    },
-
-    [`/ko${TELEGRAM_BOT_NAME}`]: async message => {
-      return commands.translation('ko', message, true);
-    },
-
-    '/en': async message => {
-      return commands.translation('en', message, true);
-    },
-
-    [`/en${TELEGRAM_BOT_NAME}`]: async message => {
-      return commands.translation('en', message, true);
-    },
-
-    '/ja': async message => {
-      return commands.translation('ja', message, true);
-    },
-
-    [`/ja${TELEGRAM_BOT_NAME}`]: async message => {
-      return commands.translation('ja', message, true);
-    },
-
-    '/shorturl': async message => {
+    '/shorturl': async (message: any) => {
       return commands.shorturl(message, true);
     },
 
-    [`/shorturl${TELEGRAM_BOT_NAME}`]: async message => {
+    [`/shorturl${TELEGRAM_BOT_NAME}`]: async (message: any) => {
       return commands.shorturl(message, true);
     },
 
-    '/place': async message => {
+    '/place': async (message: any) => {
       return commands.place(message, true);
     },
 
-    [`/place${TELEGRAM_BOT_NAME}`]: async message => {
+    [`/place${TELEGRAM_BOT_NAME}`]: async (message: any) => {
       return commands.place(message, true);
     },
 
-    '/wt': async message => {
-      return commands.wt(message);
+    '/logging': async (message: any) => {
+      return commands.logging(message);
     },
 
-    [`/wt${TELEGRAM_BOT_NAME}`]: async message => {
-      return commands.wt(message, true);
-    },
-
-    '/logging': async message => {
-      return commands.logging();
-    },
-
-    [`/logging${TELEGRAM_BOT_NAME}`]: async message => {
-      return commands.logging();
+    [`/logging${TELEGRAM_BOT_NAME}`]: async (message: any) => {
+      return commands.logging(message);
     },
 
     /**
@@ -104,7 +62,7 @@ const messageEntities = {
      * @param entity
      * @returns {Promise<void>}
      */
-    getResult: async (message, entity) => {
+    getResult: async (message: any, entity: any) => {
       try {
         let splitCommand = message.text.split(' ')[0];
         let command = splitCommand.substr(entity.offset, entity.length);
@@ -141,20 +99,11 @@ const commands = {
    * @param disable_notification
    * @returns {Promise<*>}
    */
-  help: async (message, disable_notification = false) => {
+  help: async (message: any, disable_notification = false) => {
     let text = `
 /help - 도움말
-/q - 검색합니다. 예) /q test
-/ko - 한국어로 번역합니다. 예) /ko test
-/ja - 일본어로 번역합니다. 예) /ja 테스트
-/en - 영어로 번역합니다. 예) /en 테스트
 /shorturl - 긴 길이의 URL을 짧게 바꿔줍니다. 예) /shorturl https://ko.wikipedia.org/wiki/URL
 /place - 장소검색을 합니다. 예) /place 강남구청
-/wt - 9시간 기준 월별 근무 시간을 계산합니다. 예) /wt 35:24 3 1
-  - 35:24 -> 이번 달 근무 했던 시간:분
-  - 3 -> 이번달 총 휴무, 공휴일 수
-  - 1 -> 이번달 중 앞으로 남은 총 휴무, 공휴일 수
-  - 재택 근무는 근무 시간에 임의로 더해 주세요!
    `;
     return BOT.sendMessage(message.chat.id, text, {
       disable_notification,
@@ -163,67 +112,12 @@ const commands = {
   },
 
   /**
-   * q 커맨드 함수
-   * @param message
-   * @param disable_notification
-   * @returns {Promise<*>}
-   */
-  search: async (message, disable_notification = false) => {
-    try {
-      const q = message.text.replace(/^(\/q\s*)|^(\/q)/, '');
-      const { title, content } = await utils.getGoogleSearchResult(q);
-      const text = `
-*${title}*: ${q}
-
-${content}
-            `;
-      return BOT.sendMessage(message.chat.id, text, {
-        parse_mode,
-        disable_notification,
-      });
-    } catch (e) {
-      console.error(`commands.search() Error: ${e}`);
-      throw e;
-    }
-  },
-
-  /**
-   * 번역
-   * @param target {string}
-   * @param message
-   * @param disable_notification
-   * @returns {Promise<*>}
-   */
-  translation: async (target, message, disable_notification = false) => {
-    try {
-      const query = message.text.replace(/^(\/..\s)|^(\/..)/, '');
-      let text = 'None!';
-      if (query !== '') {
-        const source = await utils.detectLanguage(query);
-        const content = await utils.translation(source, target, query);
-        text = `
-*${source}(감지됨) -> ${target}*
-
-${content}
-            `;
-      }
-      return BOT.sendMessage(message.chat.id, text, {
-        parse_mode,
-        disable_notification,
-      });
-    } catch (e) {
-      console.error(`commands.translation() Error: ${e}`);
-      throw e;
-    }
-  },
-
-  /**
    * 단축 url
    * @param message
    * @param disable_notification
    * @returns {Promise<*>}
    */
-  shorturl: async (message, disable_notification = false) => {
+  shorturl: async (message: any, disable_notification = false) => {
     try {
       const query = message.text.replace(/^(\/shorturl\s)|^(\/shorturl)/, '');
       let text = 'None!';
@@ -250,15 +144,15 @@ QR: ${url}.qr
    * @param disable_notification
    * @returns {Promise<*>}
    */
-  place: async (message, disable_notification = false) => {
+  place: async (message: any, disable_notification = false) => {
     try {
       const query = message.text.replace(/^(\/place\s)|^(\/place)/, '');
       let text = 'None!';
       if (query !== '') {
         const places = await utils.place(query);
         if (places.length > 0) {
-          const textArray = [];
-          places.map(place => {
+          const textArray: any[] = [];
+          places.map((place: any) => {
             textArray.push(`- [${place.place_name}](${place.place_url}): ${place.road_address_name}(${place.address_name})`);
           });
           text = textArray.join('\n');
@@ -275,63 +169,33 @@ QR: ${url}.qr
   },
 
   /**
-   * 9시간 근무시간 계산기
-   * @param message
-   * @param disable_notification
-   * @returns {Promise<unknown>}
-   */
-  wt: async (message, disable_notification = false) => {
-    try {
-      const query = message.text.replace(/^(\/wt\s)|^(\/wt)/, '');
-      let text = 'Nope!';
-      if (query !== '') {
-        try {
-          text = await utils.workingTimeCalculator(query);
-        } catch (e) {
-          return BOT.sendMessage(message.chat.id, 'Invalid Request!', {
-            parse_mode,
-            disable_notification,
-          });
-        }
-      }
-      return BOT.sendMessage(message.chat.id, text, {
-        parse_mode,
-        disable_notification,
-      });
-    } catch (e) {
-      console.error(`commands.wt() Error: ${e}`);
-      throw e;
-    }
-  },
-
-  /**
    * logging 커맨드 함수
    * @returns {Promise<*>}
    */
-  logging: async () => {
+  logging: async (message: any) => {
     const text = `
 *Logging*
 \`\`\`json
 ${JSON.stringify(message, null, 2)}
 \`\`\`            
             `;
-    BOT.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID, text, {
-      parse_mode
+    BOT.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!', text, {
+      parse_mode,
     });
     return BOT.sendMessage(message.chat.id, 'Complete!', {
       disable_notification: true,
     });
   },
 
-  '/request_user_auth': async message => {
+  '/request_user_auth': async (message: any) => {
     const text = `
 request_user_auth!
 \`\`\`json
 ${JSON.stringify(message, null, 2)}
 \`\`\`            
             `;
-    BOT.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID, text, {
-      parse_mode
+    BOT.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!', text, {
+      parse_mode,
     });
     const resultText = `
 Request complete!
@@ -343,21 +207,21 @@ Request complete!
 };
 
 
-const callbacks = {
+const callbacks: any = {
   /**
    * Sample function
    * @param message
    * @param type
    * @returns {Promise<*>}
    */
-  callback: async (message, type = 'type1') => {
+  callback: async (message: any, type = 'type1') => {
     try {
       // info: logic!
       const text = `callback: ${type}`;
       return BOT.editMessageText(text, {
         chat_id: message.chat.id,
         message_id: message.message_id,
-        parse_mode
+        parse_mode,
       });
     } catch (e) {
       console.error(`callbacks.callback() Error: ${e}`);
@@ -366,7 +230,7 @@ const callbacks = {
   },
 };
 
-const post = async event => {
+const post = async (event: any) => {
   try {
     const requestBody = JSON.parse(event.body);
     if (requestBody.hasOwnProperty('message')) {
@@ -393,7 +257,7 @@ const post = async event => {
       const message = callbackQuery.message;
       const data = requestBody.callback_query.data;
       await eval(`callbacks.${data}`);
-      await BOT.sendMessage(OwnerChatId, `
+      await BOT.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!', `
 *callback_query*
 \`\`\`
 ${JSON.stringify(callbackQuery, null, 2)}

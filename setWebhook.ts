@@ -1,11 +1,9 @@
-'use strict';
+import { default as axios } from 'axios';
+import * as READLINE from 'readline';
 
-
-const axios = require('axios');
-const READLINE = require('readline');
 const RL = READLINE.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 const setWebHook = {
@@ -15,7 +13,7 @@ const setWebHook = {
    * @param comment
    * @returns {Promise<*>}
    */
-  ask: async (q, comment = false) => {
+  ask: async (q: any, comment = false) => {
     return new Promise((resolve) => {
       console.log('');
       if (comment) {
@@ -28,7 +26,7 @@ const setWebHook = {
   },
 
   run: async () => {
-    try{
+    try {
       const token = await setWebHook.ask('Telegram Bot Token (required): ');
       const url = await setWebHook.ask('URL (required): ');
       const result = await axios({
@@ -39,10 +37,10 @@ const setWebHook = {
         },
       });
       console.log(JSON.stringify(result.data, null, 2));
-    }catch (e) {
+    } catch (e) {
       console.error(e);
     }
     process.exit();
-  }
+  },
 };
 setWebHook.run();

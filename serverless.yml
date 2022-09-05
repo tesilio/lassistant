@@ -1,5 +1,10 @@
 service: lassistant
 
+# 플러그인
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
+
 custom:
   TELEGRAM: ${file(./config/config.js):TELEGRAM}
   NAVER: ${file(./config/config.js):NAVER}
@@ -8,7 +13,7 @@ custom:
     dev: false
     production:
       rate: rate(4 minutes)
-      enabled: true
+      enabled: false
       description: "Health Checker"
       input:
         healthCheck: true
@@ -16,7 +21,7 @@ custom:
 # 제공자
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs16.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'ap-northeast-2'}
   memorySize: 128 # optional, in MB, default is 1024

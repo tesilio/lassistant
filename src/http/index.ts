@@ -1,7 +1,4 @@
-'use strict';
-
-
-const utils = require('../../lib/utils');
+import * as utils from '../../lib/utils';
 
 /**
  * For 'index'
@@ -9,7 +6,7 @@ const utils = require('../../lib/utils');
  * @param context
  * @returns {Promise<*>}
  */
-exports.handler = async (event, context)=> {
+exports.handler = async (event: any, context: any) => {
   try {
     // info: health-check
     if (event.hasOwnProperty('healthCheck') && event.healthCheck === true) {
@@ -24,6 +21,6 @@ exports.handler = async (event, context)=> {
     await utils.errorMessageSender(event, context, e);
   }
   return {
-    statusCode: 200
+    statusCode: 200,
   };
 };

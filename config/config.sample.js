@@ -1,7 +1,7 @@
 // This file is a sample. Please change the file to config.js and use it.
 // You must fill in the required items before they can run normally.
 
-module.exports.TELEGRAM = (serverless) => ({
+module.exports.TELEGRAM = () => ({
   dev: {
     TELEGRAM_TOKEN: '<Please fill in this information>',
     TELEGRAM_BOT_NAME: '<Please fill in this information>',
@@ -16,7 +16,7 @@ module.exports.TELEGRAM = (serverless) => ({
   }
 });
 
-module.exports.NAVER = (serverless) => ({
+module.exports.NAVER = () => ({
   dev: {
     CLIENT_ID: '<Please fill in this information>',
     CLIENT_SECRET: '<Please fill in this information>',
@@ -27,7 +27,7 @@ module.exports.NAVER = (serverless) => ({
   }
 });
 
-module.exports.KAKAO = (serverless) => ({
+module.exports.KAKAO = () => ({
   dev: {
     KAKAO_REST_API_KEY: '<Please fill in this information>',
   },
