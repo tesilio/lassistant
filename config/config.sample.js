@@ -15,23 +15,3 @@ module.exports.TELEGRAM = () => ({
     TELEGRAM_OWNER_CHAT_ID: '<Please fill in this information>',
   }
 });
-
-module.exports.NAVER = () => ({
-  dev: {
-    CLIENT_ID: '<Please fill in this information>',
-    CLIENT_SECRET: '<Please fill in this information>',
-  },
-  production: {
-    CLIENT_ID: '<Please fill in this information>',
-    CLIENT_SECRET: '<Please fill in this information>',
-  }
-});
-
-module.exports.KAKAO = () => ({
-  dev: {
-    KAKAO_REST_API_KEY: '<Please fill in this information>',
-  },
-  production: {
-    KAKAO_REST_API_KEY: '<Please fill in this information>',
-  }
-});

@@ -32,22 +32,6 @@ const messageEntities: any = {
       return commands.help(message, true);
     },
 
-    '/shorturl': async (message: any) => {
-      return commands.shorturl(message, true);
-    },
-
-    [`/shorturl${TELEGRAM_BOT_NAME}`]: async (message: any) => {
-      return commands.shorturl(message, true);
-    },
-
-    '/place': async (message: any) => {
-      return commands.place(message, true);
-    },
-
-    [`/place${TELEGRAM_BOT_NAME}`]: async (message: any) => {
-      return commands.place(message, true);
-    },
-
     '/logging': async (message: any) => {
       return commands.logging(message);
     },
@@ -112,63 +96,6 @@ const commands = {
   },
 
   /**
-   * 단축 url
-   * @param message
-   * @param disable_notification
-   * @returns {Promise<*>}
-   */
-  shorturl: async (message: any, disable_notification = false) => {
-    try {
-      const query = message.text.replace(/^(\/shorturl\s)|^(\/shorturl)/, '');
-      let text = 'None!';
-      if (query !== '') {
-        const url = await utils.shorturl(query);
-        text = `
-ShortURL: ${url}
-QR: ${url}.qr
-            `;
-      }
-      return BOT.sendMessage(message.chat.id, text, {
-        parse_mode,
-        disable_notification,
-      });
-    } catch (e) {
-      console.error(`commands.shorturl() Error: ${e}`);
-      throw e;
-    }
-  },
-
-  /**
-   * 키워드로 장소검색
-   * @param message
-   * @param disable_notification
-   * @returns {Promise<*>}
-   */
-  place: async (message: any, disable_notification = false) => {
-    try {
-      const query = message.text.replace(/^(\/place\s)|^(\/place)/, '');
-      let text = 'None!';
-      if (query !== '') {
-        const places = await utils.place(query);
-        if (places.length > 0) {
-          const textArray: any[] = [];
-          places.map((place: any) => {
-            textArray.push(`- [${place.place_name}](${place.place_url}): ${place.road_address_name}(${place.address_name})`);
-          });
-          text = textArray.join('\n');
-        }
-      }
-      return BOT.sendMessage(message.chat.id, text, {
-        parse_mode,
-        disable_notification,
-      });
-    } catch (e) {
-      console.error(`commands.place() Error: ${e}`);
-      throw e;
-    }
-  },
-
-  /**
    * logging 커맨드 함수
    * @returns {Promise<*>}
    */
@@ -202,8 +129,6 @@ Request complete!
             `;
     return BOT.sendMessage(message.chat.id, resultText);
   },
-
-
 };
 
 

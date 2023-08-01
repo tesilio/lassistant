@@ -7,8 +7,6 @@ plugins:
 
 custom:
   TELEGRAM: ${file(./config/config.js):TELEGRAM}
-  NAVER: ${file(./config/config.js):NAVER}
-  KAKAO: ${file(./config/config.js):KAKAO}
   schedules: # info: Health Checker!
     dev: false
     production:
@@ -35,9 +33,6 @@ provider:
     TELEGRAM_CHAT_ID: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_CHAT_ID}
     TELEGRAM_OWNER_CHAT_ID: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_OWNER_CHAT_ID}
     TELEGRAM_BOT_NAME: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_BOT_NAME}
-    NAVER_CLIENT_ID: ${self:custom.NAVER.${self:provider.stage}.NAVER_CLIENT_ID}
-    NAVER_CLIENT_SECRET: ${self:custom.NAVER.${self:provider.stage}.NAVER_CLIENT_SECRET}
-    KAKAO_REST_API_KEY: ${self:custom.KAKAO.${self:provider.stage}.KAKAO_REST_API_KEY}
     LOCALE: 'ko-KR'
     TIMEZONE: 'Asia/Seoul'
     TZ: 'Asia/Seoul'
@@ -82,5 +77,5 @@ functions:
         - src/schedule/**
     events:
       - schedule:
-          rate: cron(0 22 * * ? *)
-          enabled: true
+        rate: cron(0 22 * * ? *)
+        enabled: true
