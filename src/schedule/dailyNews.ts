@@ -1,51 +1,76 @@
 import * as utils from '../../lib/utils';
-import { Element } from 'cheerio';
-import * as querystring from 'querystring';
+import * as cheerio from 'cheerio';
+import { Cheerio, CheerioAPI, Element, SelectorType } from 'cheerio';
 import { default as axios } from 'axios';
 import * as iconv from 'iconv-lite';
-import * as cheerio from 'cheerio';
 
+class DailyNews {
+  private get url() {
+    const url: URL = new URL('main/list.naver', 'https://news.naver.com');
+    url.searchParams.set('mode', 'LS2d');
+    url.searchParams.set('mid', 'shm');
+    url.searchParams.set('sid1', '105');
+    url.searchParams.set('sid2', '230');
+    return url;
+  }
 
-const crawler = async () => {
-  const params = querystring.stringify({
-    mode: 'LS2D',
-    mid: 'shm',
-    sid1: '105',
-    sid2: '230',
-  });
-  const url = `https://news.naver.com/main/list.naver?${params}`;
-  const html = await axios({
-    url,
-    method: 'GET',
-    responseType: 'arraybuffer',
-  });
-  let content = iconv.decode(html.data, 'EUC-KR').toString(); //html 파싱한걸 한글깨짐방지
-  content = content.replace(/�/gi, '');
-  const $ = cheerio.load(content);
-  const liList = $('#main_content > div.list_body.newsflash_body > ul.type06_headline li');
-  const messageList: any[] = [];
-  liList.each(function (index: number, li: Element) {
-    index;
-    const a = $(li).find('a');
-    messageList.push(`- [${a.text().trim()}](${a.attr('href')?.trim()})`);
-  });
-  const text = messageList.join('\n');
+  private async getHtml(url: URL) {
+    return axios({
+      url: url.toString(),
+      method: 'GET',
+      responseType: 'arraybuffer',
+    });
+  }
 
-  const bot = utils.bot();
-  await bot.sendMessage(process.env.TELEGRAM_CHAT_ID || 'ERROR!', text, {
-    parse_mode: 'Markdown',
-    disable_web_page_preview: true,
-  });
-};
+  private getContents(html: any) {
+    const contents = iconv.decode(html.data, 'EUC-KR').toString();
+    return contents.replace(/�/gi, '');
+  }
+
+  private getLiList(cheerioAPI: CheerioAPI) {
+    return cheerioAPI('#main_content > div.list_body.newsflash_body > ul.type06_headline li');
+  }
+
+  private getMessageList(cheerioAPI: CheerioAPI, liList: Cheerio<"#main_content > div.list_body.newsflash_body > ul.type06_headline li" extends SelectorType ? Element : string>): string[] {
+    const result: string[] = [];
+    liList.each(function (index: number, li: Element) {
+      index;
+      const a = cheerioAPI(li).find('a');
+      result.push(`- [${a.text().trim()}](${a.attr('href')?.trim()})`);
+    });
+    return result;
+  }
+
+  private getMessage(messageList: string[]) {
+    return messageList.join('\n');
+  }
+
+  private async sendMessage(message: string): Promise<void> {
+    const bot = utils.bot();
+    await bot.sendMessage(process.env.TELEGRAM_CHAT_ID || 'ERROR!', message, {
+      parse_mode: 'Markdown',
+      disable_web_page_preview: true,
+    });
+  }
+
+  async execute(): Promise<void> {
+    const html = await this.getHtml(this.url);
+    const contents = this.getContents(html);
+    const cheerioAPI: CheerioAPI = cheerio.load(contents);
+    const liList = this.getLiList(cheerioAPI);
+    const messageList = this.getMessageList(cheerioAPI, liList);
+    const message = this.getMessage(messageList);
+    await this.sendMessage(message);
+  }
+}
 
 exports.handler = async (event: any, context: any) => {
   try {
-    await crawler();
+    const dailyNews = new DailyNews();
+    await dailyNews.execute();
   } catch (e) {
     console.error(`Final Catch in ${__filename}:`, e);
     await utils.errorMessageSender(event, context, e);
-  } finally {
-
   }
   return {
     statusCode: 200,
