@@ -77,5 +77,6 @@ functions:
         - src/schedule/**
     events:
       - schedule:
-        rate: cron(0 22 * * ? *)
-        enabled: true
+          rate: cron(0 22 * * ? *)
+          enabled: true
+          description: '매일 오전 7시'
