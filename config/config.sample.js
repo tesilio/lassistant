@@ -3,19 +3,15 @@
 
 module.exports.TELEGRAM = () => ({
   dev: {
-    TELEGRAM: {
-      TELEGRAM_TOKEN: '<Please fill in this information>',
-      TELEGRAM_BOT_NAME: '<Please fill in this information>',
-      TELEGRAM_CHAT_ID: '<Please fill in this information>',
-      TELEGRAM_OWNER_CHAT_ID: '<Please fill in this information>',
-    },
+    TELEGRAM_TOKEN: '<Please fill in this information>',
+    TELEGRAM_BOT_NAME: '<Please fill in this information>',
+    TELEGRAM_CHAT_ID: '<Please fill in this information>',
+    TELEGRAM_OWNER_CHAT_ID: '<Please fill in this information>',
   },
-  production: {
-    TELEGRAM: {
-      TELEGRAM_TOKEN: '<Please fill in this information>',
-      TELEGRAM_BOT_NAME: '<Please fill in this information>',
-      TELEGRAM_CHAT_ID: '<Please fill in this information>',
-      TELEGRAM_OWNER_CHAT_ID: '<Please fill in this information>',
-    },
-  }
+  TELEGRAM: {
+    TELEGRAM_TOKEN: '<Please fill in this information>',
+    TELEGRAM_BOT_NAME: '<Please fill in this information>',
+    TELEGRAM_CHAT_ID: '<Please fill in this information>',
+    TELEGRAM_OWNER_CHAT_ID: '<Please fill in this information>',
+  },
 });
