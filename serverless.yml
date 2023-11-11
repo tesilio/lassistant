@@ -19,7 +19,7 @@ custom:
 # 제공자
 provider:
   name: aws
-  runtime: nodejs16.x
+  runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'ap-northeast-2'}
   memorySize: 128 # optional, in MB, default is 1024
