@@ -21,7 +21,7 @@ provider:
   name: aws
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'ap-northeast-2'}
+  region: ap-northeast-2
   memorySize: 128 # optional, in MB, default is 1024
   timeout: 10 # optional, in seconds, default is 10
   versionFunctions: false # optional, default is true
