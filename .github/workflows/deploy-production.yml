@@ -27,7 +27,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install Dependencies
-        run: npm install
+        run: npm install -g yarn && yarn install
 
       - name: Serverless Deploy
         uses: serverless/github-action@v3.2
