@@ -3,6 +3,8 @@ import * as cheerio from 'cheerio';
 import { Cheerio, CheerioAPI, Element, SelectorType } from 'cheerio';
 import { default as axios } from 'axios';
 import * as iconv from 'iconv-lite';
+import { Lassistant } from "../Lassistant";
+import environment from "../../config/environment";
 
 class DailyNews {
   private get url() {
@@ -46,11 +48,8 @@ class DailyNews {
   }
 
   private async sendMessage(message: string): Promise<void> {
-    const bot = utils.bot();
-    await bot.sendMessage(process.env.TELEGRAM_CHAT_ID || 'ERROR!', message, {
-      parse_mode: 'Markdown',
-      disable_web_page_preview: true,
-    });
+    const lassistant = new Lassistant();
+    await lassistant.sendMessage(environment.telegram.chatId || 'ERROR!', message);
   }
 
   async execute(): Promise<void> {

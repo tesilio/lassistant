@@ -2,7 +2,7 @@ import * as utils from '../../lib/utils';
 
 const BOT = utils.bot();
 const TELEGRAM_BOT_NAME = process.env.TELEGRAM_BOT_NAME;
-const parse_mode = 'Markdown';
+const PARSE_MODE = 'Markdown';
 
 
 /**
@@ -98,7 +98,7 @@ ${JSON.stringify(message, null, 2)}
 \`\`\`            
             `;
     BOT.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!', text, {
-      parse_mode,
+      parse_mode: PARSE_MODE,
     });
     return BOT.sendMessage(message.chat.id, 'Complete!', {
       disable_notification: true,
@@ -113,7 +113,7 @@ ${JSON.stringify(message, null, 2)}
 \`\`\`            
             `;
     BOT.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!', text, {
-      parse_mode,
+      parse_mode: PARSE_MODE,
     });
     const resultText = `
 Request complete!
@@ -136,7 +136,7 @@ const callbacks: any = {
       return BOT.editMessageText(text, {
         chat_id: message.chat.id,
         message_id: message.message_id,
-        parse_mode,
+        parse_mode: PARSE_MODE,
       });
     } catch (e) {
       console.error(`callbacks.callback() Error: ${e}`);
@@ -178,7 +178,7 @@ const post = async (event: any) => {
 ${JSON.stringify(callbackQuery, null, 2)}
 \`\`\`
             `, {
-        parse_mode,
+        parse_mode: PARSE_MODE,
       });
     }
   } catch (e) {
