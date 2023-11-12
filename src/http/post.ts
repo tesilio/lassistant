@@ -7,13 +7,6 @@ const parse_mode = 'Markdown';
 
 /**
  help - 도움말
- q - 검색
- ko - 한국어로 번역
- ja - 일본어로 번역
- en - 영어로 번역
- shorturl - URL 단축
- place - 키워드로 장소 검색
- wt - 9시간 기준 월별 근무 시간 계산
  */
 const messageEntities: any = {
   botCommands: {
@@ -53,7 +46,7 @@ const messageEntities: any = {
         return messageEntities.botCommands[command](message);
       } catch (e) {
         console.error(`messageEntities.botCommands.getResult() Error: ${e}`);
-        if (message.text.includes('@UBAPI_bot') || message.chat.type === 'private') {
+        if (message.chat.type === 'private') {
           let text = '잘못된 요청이거나 에러입니다.';
           let disable_notification = false;
           if (e instanceof TypeError) {
@@ -86,8 +79,6 @@ const commands = {
   help: async (message: any, disable_notification = false) => {
     let text = `
 /help - 도움말
-/shorturl - 긴 길이의 URL을 짧게 바꿔줍니다. 예) /shorturl https://ko.wikipedia.org/wiki/URL
-/place - 장소검색을 합니다. 예) /place 강남구청
    `;
     return BOT.sendMessage(message.chat.id, text, {
       disable_notification,
@@ -130,7 +121,6 @@ Request complete!
     return BOT.sendMessage(message.chat.id, resultText);
   },
 };
-
 
 const callbacks: any = {
   /**
