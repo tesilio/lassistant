@@ -1,0 +1,6 @@
+{
+  "TELEGRAM_TOKEN": "${ssm:/lassistant/production/TELEGRAM_TOKEN}",
+  "TELEGRAM_BOT_NAME": "${ssm:/lassistant/production/TELEGRAM_BOT_NAME}",
+  "TELEGRAM_CHAT_ID": "${ssm:/lassistant/production/TELEGRAM_CHAT_ID}",
+  "TELEGRAM_OWNER_CHAT_ID": "${ssm:/lassistant/production/TELEGRAM_OWNER_CHAT_ID}"
+}

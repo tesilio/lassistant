@@ -6,7 +6,7 @@ plugins:
   - serverless-plugin-typescript
 
 custom:
-  TELEGRAM: ${file(./config/config.js):TELEGRAM}
+  ENV: ${file(./env/${self:provider.stage}.json)}
   schedules: # info: Health Checker!
     dev: false
     production:
@@ -29,10 +29,10 @@ provider:
   environment:
     REGION: ${opt:region, 'ap-northeast-2'}
     STAGE: ${self:provider.stage}
-    TELEGRAM_TOKEN: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_TOKEN}
-    TELEGRAM_CHAT_ID: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_CHAT_ID}
-    TELEGRAM_OWNER_CHAT_ID: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_OWNER_CHAT_ID}
-    TELEGRAM_BOT_NAME: ${self:custom.TELEGRAM.${self:provider.stage}.TELEGRAM_BOT_NAME}
+    TELEGRAM_TOKEN: ${self:custom.ENV.TELEGRAM_TOKEN}
+    TELEGRAM_CHAT_ID: ${self:custom.ENV.TELEGRAM_CHAT_ID}
+    TELEGRAM_OWNER_CHAT_ID: ${self:custom.ENV.TELEGRAM_OWNER_CHAT_ID}
+    TELEGRAM_BOT_NAME: ${self:custom.ENV.TELEGRAM_BOT_NAME}
     LOCALE: 'ko-KR'
     TIMEZONE: 'Asia/Seoul'
     TZ: 'Asia/Seoul'
