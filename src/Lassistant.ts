@@ -1,4 +1,4 @@
-import * as TelegramBot from "node-telegram-bot-api";
+import * as TelegramBot from 'node-telegram-bot-api';
 import environment from '../config/environment';
 
 export class Lassistant {

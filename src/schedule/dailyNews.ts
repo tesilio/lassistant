@@ -1,10 +1,10 @@
-import * as utils from '../../lib/utils';
+import utils = require("../../lib/utils");
 import * as cheerio from 'cheerio';
 import { Cheerio, CheerioAPI, Element, SelectorType } from 'cheerio';
 import { default as axios } from 'axios';
 import * as iconv from 'iconv-lite';
-import { Lassistant } from "../Lassistant";
-import environment from "../../config/environment";
+import { Lassistant } from '../Lassistant';
+import environment from '../../config/environment';
 
 class DailyNews {
   private get url() {
