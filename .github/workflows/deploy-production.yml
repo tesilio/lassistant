@@ -6,7 +6,7 @@ on:
       - 'main'
 
 env:
-  NODE_VERSION: 18.18.2
+  NODE_VERSION: 20.9.0
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,6 +16,7 @@ jobs:
   deploy:
     name: deploy
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout
