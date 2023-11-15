@@ -1,4 +1,4 @@
-import utils = require("../../lib/utils");
+import * as utils from '../../lib/utils';
 import * as cheerio from 'cheerio';
 import { Cheerio, CheerioAPI, Element, SelectorType } from 'cheerio';
 import { default as axios } from 'axios';
@@ -33,7 +33,14 @@ class DailyNews {
     return cheerioAPI('#main_content > div.list_body.newsflash_body > ul.type06_headline li');
   }
 
-  private getMessageList(cheerioAPI: CheerioAPI, liList: Cheerio<"#main_content > div.list_body.newsflash_body > ul.type06_headline li" extends SelectorType ? Element : string>): string[] {
+  private getMessageList(
+    cheerioAPI: CheerioAPI,
+    liList: Cheerio<
+      '#main_content > div.list_body.newsflash_body > ul.type06_headline li' extends SelectorType
+        ? Element
+        : string
+    >,
+  ): string[] {
     const result: string[] = [];
     liList.each(function (index: number, li: Element) {
       index;

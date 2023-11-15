@@ -3,7 +3,6 @@ import * as Telegram from 'node-telegram-bot-api';
 import * as querystring from 'querystring';
 import { SendMessageOptions } from 'node-telegram-bot-api';
 
-
 const utils = {
   /**
    * 텔레그램 봇 반환기
@@ -23,16 +22,22 @@ const utils = {
     try {
       const bot = utils.bot();
       const region = process.env.REGION;
-      let cloudWatchLogURL = `https://${region}.console.aws.amazon.com/cloudwatch/home?region=${region}#logEventViewer:group=${context.logGroupName};stream=${context.logStreamName};filter=${querystring.escape(`\'${context.awsRequestId}\'`)}`;
+      let cloudWatchLogURL = `https://${region}.console.aws.amazon.com/cloudwatch/home?region=${region}#logEventViewer:group=${
+        context.logGroupName
+      };stream=${context.logStreamName};filter=${querystring.escape(
+        `\'${context.awsRequestId}\'`,
+      )}`;
       let options = {
         parse_mode: 'Markdown',
         reply_markup: {
-          inline_keyboard: [[
-            {
-              text: 'CloudWatchLog',
-              url: cloudWatchLogURL,
-            },
-          ]],
+          inline_keyboard: [
+            [
+              {
+                text: 'CloudWatchLog',
+                url: cloudWatchLogURL,
+              },
+            ],
+          ],
         },
       } as SendMessageOptions;
 
@@ -52,7 +57,6 @@ ${JSON.stringify(messageObject, null, 2)}
       console.error(`errorMessageSender Error: ${e}`);
       throw e;
     }
-
   },
 };
 

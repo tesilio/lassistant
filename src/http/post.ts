@@ -4,7 +4,6 @@ const BOT = utils.bot();
 const TELEGRAM_BOT_NAME = process.env.TELEGRAM_BOT_NAME;
 const PARSE_MODE = 'Markdown';
 
-
 /**
  help - 도움말
  */
@@ -60,14 +59,13 @@ const messageEntities: any = {
           });
         }
       }
-
     },
   },
 };
 
 /**
  * 커맨드 함수들 객체
- * @type {{help: (function(*, *=): *), search: commands.search, logging: (function(): *), "/request_user_auth": (function(*=): *)}}
+ * @type {{help: (function(*, *=): *), search: commands.search, logging: (function(): *), '/request_user_auth': (function(*=): *)}}
  */
 const commands = {
   /**
@@ -172,14 +170,18 @@ const post = async (event: any) => {
       const message = callbackQuery.message;
       const data = requestBody.callback_query.data;
       await eval(`callbacks.${data}`);
-      await BOT.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!', `
+      await BOT.sendMessage(
+        process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!',
+        `
 *callback_query*
 \`\`\`
 ${JSON.stringify(callbackQuery, null, 2)}
 \`\`\`
-            `, {
-        parse_mode: PARSE_MODE,
-      });
+            `,
+        {
+          parse_mode: PARSE_MODE,
+        },
+      );
     }
   } catch (e) {
     console.error(`Error in ${__filename}:`, e);
