@@ -4,10 +4,13 @@ import { message } from 'telegraf/filters';
 
 const telegraf = TelegramBot.getTelegraf();
 
-telegraf.on(message('text'), (ctx) => ctx.reply('Hello'));
+telegraf.on(message('text'), async (ctx) => {
+  const text = ctx.message.text;
+  await ctx.reply(text);
+});
 
 /**
  * 핸들러
- * @type {ServerlessHttp.Handler}
+ * @type {http.Handler}
  */
-export const handler = http(telegraf.webhookCallback());
+export const handler: http.Handler = http(telegraf.webhookCallback());
