@@ -1,4 +1,3 @@
-import * as utils from '../../lib/utils';
 import * as cheerio from 'cheerio';
 import { Cheerio, CheerioAPI, Element, SelectorType } from 'cheerio';
 import { default as axios } from 'axios';
@@ -7,6 +6,12 @@ import { Lassistant } from '../Lassistant';
 import environment from '../../config/environment';
 
 class DailyNews {
+  private lassistant: Lassistant;
+
+  constructor() {
+    this.lassistant = new Lassistant();
+  }
+
   private get url() {
     const url: URL = new URL('main/list.naver', 'https://news.naver.com');
     url.searchParams.set('mode', 'LS2d');
@@ -54,11 +59,6 @@ class DailyNews {
     return messageList.join('\n');
   }
 
-  private async sendMessage(message: string): Promise<void> {
-    const lassistant = new Lassistant();
-    await lassistant.sendMessage(environment.telegram.chatId || 'ERROR!', message);
-  }
-
   async execute(): Promise<void> {
     const html = await this.getHtml(this.url);
     const contents = this.getContents(html);
@@ -66,17 +66,21 @@ class DailyNews {
     const liList = this.getLiList(cheerioAPI);
     const messageList = this.getMessageList(cheerioAPI, liList);
     const message = this.getMessage(messageList);
-    await this.sendMessage(message);
+    await this.lassistant.sendMessage(environment.telegram.chatId, message);
+  }
+
+  async sendErrorMessage(error: any): Promise<void> {
+    await this.lassistant.sendErrorMessage(error);
   }
 }
 
-exports.handler = async (event: any, context: any) => {
+exports.handler = async () => {
+  const dailyNews = new DailyNews();
   try {
-    const dailyNews = new DailyNews();
     await dailyNews.execute();
   } catch (e) {
     console.error(`Final Catch in ${__filename}:`, e);
-    await utils.errorMessageSender(event, context, e);
+    await dailyNews.sendErrorMessage(e);
   }
   return {
     statusCode: 200,
