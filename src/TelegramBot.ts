@@ -1,16 +1,34 @@
+import * as _ from 'lodash';
 import environment from '../config/environment';
 import { Telegraf } from 'telegraf';
 import * as tt from 'telegraf/src/telegram-types';
 import { DailyNews } from './DailyNews';
 
 export class TelegramBot {
-  private telegraf: Telegraf;
+  private static telegramBot: TelegramBot;
+  private static telegraf: Telegraf;
 
   /**
    * 생성자
    */
-  constructor() {
-    this.telegraf = new Telegraf(environment.telegram.token);
+  private constructor() {
+    if (_.isEmpty(TelegramBot.telegraf) === true) {
+      TelegramBot.telegraf = new Telegraf(environment.telegram.token);
+    }
+  }
+
+  public static getInstance() {
+    if (_.isEmpty(TelegramBot.telegramBot) === true) {
+      TelegramBot.telegramBot = new TelegramBot();
+    }
+    return TelegramBot.telegramBot;
+  }
+
+  public static getTelegraf() {
+    if (_.isEmpty(TelegramBot.telegramBot) === true) {
+      TelegramBot.telegramBot = new TelegramBot();
+    }
+    return TelegramBot.telegraf;
   }
 
   /**
@@ -29,7 +47,7 @@ export class TelegramBot {
       disable_web_page_preview: true,
     },
   ): Promise<void> {
-    await this.telegraf.telegram.sendMessage(chatId, message, options);
+    await TelegramBot.telegraf.telegram.sendMessage(chatId, message, options);
   }
 
   /**

@@ -4,15 +4,15 @@ import { TelegramBot } from '../TelegramBot';
  * dailyNews 핸들러
  * @returns {Promise<{statusCode: number}>}
  */
-exports.handler = async (): Promise<{
+export const handler = async (): Promise<{
   statusCode: number;
 }> => {
-  const lassistant = new TelegramBot();
+  const telegramBot = TelegramBot.getInstance();
   try {
-    await lassistant.sendDailyNews();
+    await telegramBot.sendDailyNews();
   } catch (e) {
     console.error(`Final Catch in ${__filename}:`, e);
-    await lassistant.sendErrorMessage(e);
+    await telegramBot.sendErrorMessage(e);
   }
   return {
     statusCode: 200,

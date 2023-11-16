@@ -1,16 +1,16 @@
-import { APIGatewayProxyResult } from 'aws-lambda';
+import {
+  TelegramBot,
+} from '../TelegramBot';
+import * as http from 'serverless-http';
+import { message } from 'telegraf/filters';
+const telegraf = TelegramBot.getTelegraf();
+
+telegraf.on(message('text'), async (ctx) => {
+  await ctx.telegram.sendMessage(ctx.message.chat.id, `Hello ${ctx.state.role}`)
+})
 
 /**
- * webHook 핸들러
- * @returns {Promise<{statusCode: number}>}
+ * 핸들러
+ * @type {ServerlessHttp.Handler}
  */
-exports.handler = async (
-  event: APIGatewayProxyResult,
-): Promise<{
-  statusCode: number;
-}> => {
-  console.log(JSON.stringify(event));
-  return {
-    statusCode: 200,
-  };
-};
+export const handler = http(telegraf.webhookCallback('/telegraf'));

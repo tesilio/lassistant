@@ -1,3 +1,20 @@
+//import {
+//  APIGatewayProxyEvent
+//} from 'aws-lambda';
+//import {
+//  TelegramBot
+//} from './TelegramBot';
+//
+//export class WebHook {
+//  private telegramBot: TelegramBot;
+//
+//  constructor(telegramBot: TelegramBot) {
+//    this.telegramBot = telegramBot;
+//  }
+//  async responseToWebHook(event: APIGatewayProxyEvent) {
+//    console.log(JSON.stringify(event, null, 2));
+//  }
+//}
 // todo!
 //import {
 //  Lassistant
