@@ -1,4 +1,6 @@
-# Lassistant Telegram Bot(TODO)
+# Lassistant
+
+AWS Lambda 기반 Serverless 텔레그램 봇
 
 ---
 

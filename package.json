@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Telegram Bot",
   "scripts": {
-    "sls": "serverless"
+    "sls": "serverless",
+    "setWebHook": "ts-node setWebhook.ts"
   },
   "keywords": [],
   "author": "lodcoco@gmail.com",

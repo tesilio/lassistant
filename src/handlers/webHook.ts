@@ -1,9 +1,9 @@
+import { APIGatewayProxyResult } from 'aws-lambda';
+
 /**
  * webHook 핸들러
  * @returns {Promise<{statusCode: number}>}
  */
-import { APIGatewayProxyResult } from 'aws-lambda';
-
 exports.handler = async (
   event: APIGatewayProxyResult,
 ): Promise<{
