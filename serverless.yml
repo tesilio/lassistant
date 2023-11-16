@@ -43,22 +43,14 @@ package:
     - .idea/**
     - yarn.lock
     - package.json
-    - node_modules/**
     - test/**
     - .gitmodules
     - .git/**
 
 functions:
   webHook: # Index (web hook)
-    handler: src/http/index.handler
+    handler: src/handlers/webHook.handler
     description: Web Hook Handling
-    package:
-      exclude:
-        - src/**
-      include:
-        - node_modules/**
-        - lib/**
-        - src/http/**
     events:
       - http:
           path: /
@@ -66,15 +58,8 @@ functions:
           cors: true
 
   dailyNews: # 매일 아침 뉴스
-    handler: src/schedule/dailyNews.handler
+    handler: src/handlers/dailyNews.handler
     description: DailyNews Scheduler
-    package:
-      exclude:
-        - src/**
-      include:
-        - node_modules/**
-        - lib/**
-        - src/**
     events:
       - schedule:
           rate: cron(0 22 * * ? *)

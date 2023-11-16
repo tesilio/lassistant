@@ -2,16 +2,8 @@ import * as cheerio from 'cheerio';
 import { Cheerio, CheerioAPI, Element, SelectorType } from 'cheerio';
 import { default as axios } from 'axios';
 import * as iconv from 'iconv-lite';
-import { Lassistant } from '../Lassistant';
-import environment from '../../config/environment';
 
-class DailyNews {
-  private lassistant: Lassistant;
-
-  constructor() {
-    this.lassistant = new Lassistant();
-  }
-
+export class DailyNews {
   private get url() {
     const url: URL = new URL('main/list.naver', 'https://news.naver.com');
     url.searchParams.set('mode', 'LS2d');
@@ -59,30 +51,12 @@ class DailyNews {
     return messageList.join('\n');
   }
 
-  async execute(): Promise<void> {
+  async getDailyNews(): Promise<string> {
     const html = await this.getHtml(this.url);
     const contents = this.getContents(html);
     const cheerioAPI: CheerioAPI = cheerio.load(contents);
     const liList = this.getLiList(cheerioAPI);
     const messageList = this.getMessageList(cheerioAPI, liList);
-    const message = this.getMessage(messageList);
-    await this.lassistant.sendMessage(environment.telegram.chatId, message);
-  }
-
-  async sendErrorMessage(error: any): Promise<void> {
-    await this.lassistant.sendErrorMessage(error);
+    return this.getMessage(messageList);
   }
 }
-
-exports.handler = async () => {
-  const dailyNews = new DailyNews();
-  try {
-    await dailyNews.execute();
-  } catch (e) {
-    console.error(`Final Catch in ${__filename}:`, e);
-    await dailyNews.sendErrorMessage(e);
-  }
-  return {
-    statusCode: 200,
-  };
-};

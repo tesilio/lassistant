@@ -1,6 +1,7 @@
 import environment from '../config/environment';
 import { Telegraf } from 'telegraf';
 import * as tt from 'telegraf/src/telegram-types';
+import { DailyNews } from './DailyNews';
 
 export class Lassistant {
   private telegramBot: Telegraf;
@@ -21,7 +22,7 @@ export class Lassistant {
    * @returns {Promise<void>}
    */
   async sendMessage(
-    chatId: string = environment.telegram.chatId || 'ERROR!',
+    chatId: string,
     message: string,
     options: tt.ExtraReplyMessage = {
       parse_mode: 'Markdown',
@@ -43,6 +44,16 @@ Bot Error!
 ${error}
 \`\`\`
 `;
-    await this.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID, text);
+    await this.sendMessage(environment.telegram.ownerChatId, text);
+  }
+
+  /**
+   * 뉴스 발송
+   * @returns {Promise<void>}
+   */
+  async sendDailyNews(): Promise<void> {
+    const dailyNews = new DailyNews();
+    const message = await dailyNews.getDailyNews();
+    await this.sendMessage(environment.telegram.chatId, message);
   }
 }
