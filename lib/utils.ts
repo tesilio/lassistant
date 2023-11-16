@@ -1,6 +1,5 @@
 process.env.NTBA_FIX_319 = '1';
 import * as Telegram from 'node-telegram-bot-api';
-import * as querystring from 'querystring';
 import { SendMessageOptions } from 'node-telegram-bot-api';
 
 const utils = {
@@ -22,36 +21,34 @@ const utils = {
     try {
       const bot = utils.bot();
       const region = process.env.REGION;
-      let cloudWatchLogURL = `https://${region}.console.aws.amazon.com/cloudwatch/home?region=${region}#logEventViewer:group=${
-        context.logGroupName
-      };stream=${context.logStreamName};filter=${querystring.escape(
-        `\'${context.awsRequestId}\'`,
-      )}`;
-      let options = {
+      const cloudWatchLogURL = new URL(
+        `https://${region}.console.aws.amazon.com/cloudwatch/home?region=${region}#logEventViewer:group=${context.logGroupName};stream=${context.logStreamName};filter='${context.awsRequestId}'`,
+      );
+      const options = {
         parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [
             [
               {
                 text: 'CloudWatchLog',
-                url: cloudWatchLogURL,
+                url: cloudWatchLogURL.href,
               },
             ],
           ],
         },
       } as SendMessageOptions;
 
-      let messageObject = {
+      const messageObject = {
         errorMessage: error.message,
-        requestBody: JSON.parse(event.body),
+        requestBody: event.body ? JSON.parse(event.body) : undefined,
       };
 
-      let text = `
+      const text = `
 Bot Error!
 \`\`\`
 ${JSON.stringify(messageObject, null, 2)}
 \`\`\`
-        `;
+`;
       return await bot.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!', text, options);
     } catch (e) {
       console.error(`errorMessageSender Error: ${e}`);

@@ -19,6 +19,7 @@ export class Lassistant {
    * @returns {Promise<void>}
    */
   async sendMessage(chatId = environment.telegram.chatId || 'ERROR!', message: string) {
+    throw new Error('hi!');
     await this.telegramBot.sendMessage(chatId, message, {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
