@@ -1,4 +1,4 @@
-import { Lassistant } from '../Lassistant';
+import { TelegramBot } from '../TelegramBot';
 
 /**
  * dailyNews 핸들러
@@ -7,7 +7,7 @@ import { Lassistant } from '../Lassistant';
 exports.handler = async (): Promise<{
   statusCode: number;
 }> => {
-  const lassistant = new Lassistant();
+  const lassistant = new TelegramBot();
   try {
     await lassistant.sendDailyNews();
   } catch (e) {

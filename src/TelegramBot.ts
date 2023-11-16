@@ -3,14 +3,14 @@ import { Telegraf } from 'telegraf';
 import * as tt from 'telegraf/src/telegram-types';
 import { DailyNews } from './DailyNews';
 
-export class Lassistant {
-  private telegramBot: Telegraf;
+export class TelegramBot {
+  private telegraf: Telegraf;
 
   /**
    * 생성자
    */
   constructor() {
-    this.telegramBot = new Telegraf(environment.telegram.token || 'ERROR!');
+    this.telegraf = new Telegraf(environment.telegram.token);
   }
 
   /**
@@ -29,7 +29,7 @@ export class Lassistant {
       disable_web_page_preview: true,
     },
   ): Promise<void> {
-    await this.telegramBot.telegram.sendMessage(chatId, message, options);
+    await this.telegraf.telegram.sendMessage(chatId, message, options);
   }
 
   /**
