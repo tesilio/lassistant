@@ -6,7 +6,7 @@ const RL = READLINE.createInterface({
   output: process.stdout,
 });
 
-const setWebHook = {
+const setWebhook = {
   /**
    * 프롬프트!
    * @param q
@@ -27,8 +27,8 @@ const setWebHook = {
 
   run: async () => {
     try {
-      const token = await setWebHook.ask('Telegram Bot Token (required): ');
-      const url = await setWebHook.ask('URL (required): ');
+      const token = await setWebhook.ask('Telegram Bot Token (required): ');
+      const url = await setWebhook.ask('URL (required): ');
       const result = await axios({
         method: 'post',
         url: `https://api.telegram.org/bot${token}/setWebhook`,
@@ -43,4 +43,4 @@ const setWebHook = {
     process.exit();
   },
 };
-setWebHook.run();
+setWebhook.run();

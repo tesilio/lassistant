@@ -4,7 +4,8 @@
   "description": "Telegram Bot",
   "scripts": {
     "sls": "serverless",
-    "setWebHook": "ts-node setWebhook.ts"
+    "setWebhook": "ts-node setWebhook.ts",
+    "offline-production": "sls offline --stage production"
   },
   "keywords": [],
   "author": "lodcoco@gmail.com",

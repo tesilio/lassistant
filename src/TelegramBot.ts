@@ -3,6 +3,9 @@ import environment from '../config/environment';
 import { Telegraf } from 'telegraf';
 import * as tt from 'telegraf/src/telegram-types';
 import { DailyNews } from './DailyNews';
+import {
+  Webhook
+} from './Webhook';
 
 export class TelegramBot {
   private static telegramBot: TelegramBot;
@@ -17,16 +20,16 @@ export class TelegramBot {
     }
   }
 
-  public static getInstance() {
+  static getInstance() {
     if (_.isEmpty(TelegramBot.telegramBot) === true) {
       TelegramBot.telegramBot = new TelegramBot();
     }
     return TelegramBot.telegramBot;
   }
 
-  public static getTelegraf() {
-    if (_.isEmpty(TelegramBot.telegramBot) === true) {
-      TelegramBot.telegramBot = new TelegramBot();
+  static getTelegraf() {
+    if (_.isEmpty(TelegramBot.telegraf) === true) {
+      TelegramBot.telegraf = new Telegraf(environment.telegram.token);
     }
     return TelegramBot.telegraf;
   }
@@ -73,5 +76,13 @@ ${error}
     const dailyNews = new DailyNews();
     const message = await dailyNews.getDailyNews();
     await this.sendMessage(environment.telegram.chatId, message);
+  }
+
+  /**
+   * 웹훅 객체 반환
+   * @returns {Webhook}
+   */
+  getWebhook(): Webhook {
+    return Webhook.getInstance(TelegramBot.getTelegraf());
   }
 }

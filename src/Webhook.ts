@@ -1,21 +1,98 @@
-//import {
-//  APIGatewayProxyEvent
-//} from 'aws-lambda';
-//import {
-//  TelegramBot
-//} from './TelegramBot';
-//
-//export class WebHook {
-//  private telegramBot: TelegramBot;
-//
-//  constructor(telegramBot: TelegramBot) {
-//    this.telegramBot = telegramBot;
-//  }
-//  async responseToWebHook(event: APIGatewayProxyEvent) {
-//    console.log(JSON.stringify(event, null, 2));
-//  }
-//}
-// todo!
+import { Telegraf } from 'telegraf';
+import { message } from 'telegraf/filters';
+import { DailyNews } from './DailyNews';
+import * as _ from 'lodash';
+
+export class Webhook {
+  private static webhook: Webhook;
+  private readonly telegraf: Telegraf;
+  private dailyNews: DailyNews;
+  private commandList: { name: string, fn: (ctx: any) => Promise<void>, description: string }[] = [
+    {
+      name: 'news',
+      fn: async (ctx: any): Promise<void> => {
+        const news = await this.dailyNews.getDailyNews();
+        ctx.reply(news, {
+          parse_mode: 'Markdown',
+          disable_web_page_preview: true,
+        });
+      },
+      description: 'IT/과학 관련 뉴스를 제공합니다.',
+    },
+  ];
+
+  /**
+   * 생성자
+   * @param {Telegraf} telegraf - 텔레그래프 객체
+   * @private
+   */
+  private constructor(telegraf: Telegraf) {
+    this.telegraf = telegraf;
+    this.dailyNews = new DailyNews();
+    this.setStart();
+    this.setHelp();
+    this.setCommandList();
+    this.setOnMessage();
+  }
+
+  /**
+   * /start 명령어에 대한 핸들러
+   * @private
+   */
+  private setStart() {
+    this.telegraf.start((ctx) =>
+      ctx.reply(`반갑습니다. /help 명령어로 제가 무엇을 할 수 있는지 알아보세요.`),
+    );
+  }
+
+  /**
+   * /help 명령어에 대한 핸들러
+   * @private
+   */
+  private setHelp() {
+    this.telegraf.help((ctx) => {
+      const text = this.commandList.map(({ name, description }) => `/${name} - ${description}`).join('\n');
+      return ctx.reply(text);
+    });
+  }
+
+  /**
+   * command(명령어) 목록 순회 정의
+   * @private
+   */
+  private setCommandList() {
+    this.commandList.forEach((command) => {
+      const { name, fn } = command;
+      this.telegraf.command(name, fn);
+    });
+  }
+
+  /**
+   * 모든 텍스트 메시지에 대한 핸들러
+   * 이 메서드는 제일 나중에 호출해야 합니다.
+   * @private
+   */
+  private setOnMessage() {
+    this.telegraf.on(message('sticker'), (ctx) => ctx.reply('👍'));
+    this.telegraf.on(message('text'), async (ctx) => {
+      const text = ctx.message.text;
+      await ctx.reply(text);
+    });
+  }
+
+  /**
+   * Webhook 객체 반환 - 싱글턴
+   * @param {Telegraf} telegraf - 텔레그래프 객체
+   * @returns {Webhook}
+   */
+  static getInstance(telegraf: Telegraf) {
+    if (_.isEmpty(Webhook.webhook) === true) {
+      Webhook.webhook = new Webhook(telegraf);
+    }
+    return Webhook.webhook;
+  }
+}
+
 //import {
 //  Lassistant
 //} from './Lassistant';

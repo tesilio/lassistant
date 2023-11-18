@@ -48,9 +48,9 @@ package:
     - .git/**
 
 functions:
-  webHook: # Index (web hook)
-    handler: src/handlers/webHook.handler
-    description: Web Hook Handling
+  webhook: # 봇 웹훅
+    handler: src/handlers/webhook.handler
+    description: Webhook Handling
     events:
       - http:
           path: /
