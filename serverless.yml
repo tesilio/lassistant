@@ -7,14 +7,6 @@ plugins:
 
 custom:
   ENV: ${file(./env/${self:provider.stage}.json)}
-  schedules: # info: Health Checker!
-    dev: false
-    production:
-      rate: rate(4 minutes)
-      enabled: false
-      description: "Health Checker"
-      input:
-        healthCheck: true
 
 # 제공자
 provider:

@@ -56,9 +56,11 @@ export class TelegramBot {
   /**
    * 에러 메시지 발송
    * @param error - 에러 객체
+   * @param path - 에러 발생 파일명
    * @returns {Promise<void>}
    */
-  async sendErrorMessage(error: any): Promise<void> {
+  async sendErrorMessage(error: any, path: string = __filename): Promise<void> {
+    console.error(`${path}: ${error}`);
     const text = `
 Bot Error!
 \`\`\`

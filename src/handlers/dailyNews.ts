@@ -11,8 +11,7 @@ export const handler = async (): Promise<{
   try {
     await telegramBot.sendDailyNews();
   } catch (e) {
-    console.error(`Final Catch in ${__filename}:`, e);
-    await telegramBot.sendErrorMessage(e);
+    await telegramBot.sendErrorMessage(e, __filename);
   }
   return {
     statusCode: 200,
