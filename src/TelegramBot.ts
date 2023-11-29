@@ -39,7 +39,7 @@ export class TelegramBot {
    * @async
    * @param {string} chatId - Chat 아이디
    * @param {string} message - 메시지
-   * @param {ExtraReplyMessage} options - 옵션
+   * @param {tt.ExtraReplyMessage} options - 옵션
    * @returns {Promise<void>}
    */
   async sendMessage(

@@ -39,8 +39,7 @@ export class DailyNews {
     >,
   ): string[] {
     const result: string[] = [];
-    liList.each(function (index: number, li: Element) {
-      index;
+    liList.each((_index: number, li: Element) => {
       const a = cheerioAPI(li).find('a');
       result.push(`- [${a.text().trim()}](${a.attr('href')?.trim()})`);
     });

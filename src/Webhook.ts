@@ -7,7 +7,11 @@ export class Webhook {
   private static webhook: Webhook;
   private readonly telegraf: Telegraf;
   private dailyNews: DailyNews;
-  private commandList: { name: string, fn: (ctx: any) => Promise<void>, description: string }[] = [
+  private commandList: {
+    name: string;
+    fn: (ctx: any) => Promise<void>;
+    description: string;
+  }[] = [
     {
       name: 'news',
       fn: async (ctx: any): Promise<void> => {
@@ -51,7 +55,9 @@ export class Webhook {
    */
   private setHelp() {
     this.telegraf.help((ctx) => {
-      const text = this.commandList.map(({ name, description }) => `/${name} - ${description}`).join('\n');
+      const text = this.commandList
+        .map(({ name, description }) => `/${name} - ${description}`)
+        .join('\n');
       return ctx.reply(text);
     });
   }
@@ -85,7 +91,7 @@ export class Webhook {
    * @param {Telegraf} telegraf - 텔레그래프 객체
    * @returns {Webhook}
    */
-  static getInstance(telegraf: Telegraf) {
+  static getInstance(telegraf: Telegraf): Webhook {
     if (_.isEmpty(Webhook.webhook) === true) {
       Webhook.webhook = new Webhook(telegraf);
     }
