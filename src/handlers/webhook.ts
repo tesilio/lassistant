@@ -1,16 +1,8 @@
-import * as http
-  from 'serverless-http';
-import {
-  Telegraf,
-} from 'telegraf';
-import {
-  Webhook,
-} from '../Webhook';
-import {
-  DailyNews,
-} from '../DailyNews';
-import environment
-  from '../../config/environment';
+import * as http from 'serverless-http';
+import { Telegraf } from 'telegraf';
+import { Webhook } from '../Webhook';
+import { DailyNews } from '../DailyNews';
+import environment from '../../config/environment';
 
 const telegraf = new Telegraf(environment.telegram.token);
 const dailyNews = new DailyNews();

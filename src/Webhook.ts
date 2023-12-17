@@ -1,8 +1,10 @@
 import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters';
 import { DailyNews } from './DailyNews';
-import * as _ from 'lodash';
 
+/**
+ * Webhook 클래스는 텔레그램 봇의 웹훅을 처리합니다.
+ */
 export class Webhook {
   private readonly telegraf: Telegraf;
   private dailyNews: DailyNews;
@@ -25,7 +27,7 @@ export class Webhook {
   ];
 
   /**
-   * 생성자
+   * Webhook 클래스의 생성자입니다.
    * @param {Telegraf} telegraf - 텔레그래프 객체
    * @param {DailyNews} dailyNews - DailyNews 객체
    */
@@ -46,7 +48,7 @@ export class Webhook {
   }
 
   /**
-   * /start 명령어에 대한 핸들러
+   * /start 명령어에 대한 핸들러를 설정합니다.
    * @private
    */
   private setStart() {
@@ -56,7 +58,7 @@ export class Webhook {
   }
 
   /**
-   * /help 명령어에 대한 핸들러
+   * /help 명령어에 대한 핸들러를 설정합니다.
    * @private
    */
   private setHelp() {
@@ -69,7 +71,7 @@ export class Webhook {
   }
 
   /**
-   * command(명령어) 목록 순회 정의
+   * 봇의 명령어 리스트를 설정합니다.
    * @private
    */
   private setCommandList() {
@@ -80,8 +82,7 @@ export class Webhook {
   }
 
   /**
-   * 모든 텍스트 메시지에 대한 핸들러
-   * 이 메서드는 제일 나중에 호출해야 합니다.
+   * 모든 텍스트 메시지에 대한 핸들러를 설정합니다.
    * @private
    */
   private setOnMessage() {
@@ -93,204 +94,10 @@ export class Webhook {
   }
 
   /**
-   * 텔레그래프 telegraf 객체를 반환합니다.
+   * 텔레그래프의 웹훅 콜백을 반환합니다.
    * @returns {OmitThisParameter<(path?: string, opts?: {secretToken?: string}) => (req: (http.IncomingMessage & {body?: Update | undefined}), res: http.ServerResponse<http.IncomingMessage>, next?: () => void) => Promise<void>>}
    */
   get webhookCallback() {
     return this.telegraf.webhookCallback.bind(this.telegraf);
   }
 }
-
-//import {
-//  Lassistant
-//} from './Lassistant';
-//
-//const BOT = new Lassistant();
-//const TELEGRAM_BOT_NAME = process.env.TELEGRAM_BOT_NAME;
-//const PARSE_MODE = 'Markdown';
-//
-///**
-// help - 도움말
-// */
-//const messageEntities: any = {
-//  botCommands: {
-//    '/start': async (message: any) => {
-//      let text = `
-//반갑습니다. /help 명령어로 제가 뭘 할 수 있는지 알아보세요.
-//            `;
-//      return BOT.sendMessage(message.chat.id, text);
-//    },
-//
-//    '/help': async (message: any) => {
-//      return commands.help(message);
-//    },
-//
-//    [`/help${TELEGRAM_BOT_NAME}`]: async (message: any) => {
-//      return commands.help(message, true);
-//    },
-//
-//    '/logging': async (message: any) => {
-//      return commands.logging(message);
-//    },
-//
-//    [`/logging${TELEGRAM_BOT_NAME}`]: async (message: any) => {
-//      return commands.logging(message);
-//    },
-//
-//    /**
-//     * 실행함수
-//     * @param message
-//     * @param entity
-//     * @returns {Promise<void>}
-//     */
-//    getResult: async (message: any, entity: any) => {
-//      try {
-//        let splitCommand = message.text.split(' ')[0];
-//        let command = splitCommand.substr(entity.offset, entity.length);
-//        return messageEntities.botCommands[command](message);
-//      } catch (e) {
-//        console.error(`messageEntities.botCommands.getResult() Error: ${e}`);
-//        if (message.chat.type === 'private') {
-//          let text = '잘못된 요청이거나 에러입니다.';
-//          let disable_notification = false;
-//          if (e instanceof TypeError) {
-//            text = '잘못된 요청입니다.';
-//            if (message.chat.type === 'group') {
-//              disable_notification = true;
-//            }
-//          }
-//          return BOT.sendMessage(message.chat.id, text, {
-//            disable_notification,
-//          });
-//        }
-//      }
-//    },
-//  },
-//};
-//
-///**
-// * 커맨드 함수들 객체
-// * @type {{help: (function(*, *=): *), search: commands.search, logging: (function(): *), '/request_user_auth': (function(*=): *)}}
-// */
-//const commands = {
-//  /**
-//   * help 커맨드 함수
-//   * @param message
-//   * @param disable_notification
-//   * @returns {Promise<*>}
-//   */
-//  help: async (message: any, disable_notification = false) => {
-//    let text = `
-///help - 도움말
-//   `;
-//    return BOT.sendMessage(message.chat.id, text, {
-//      disable_notification,
-//      disable_web_page_preview: true,
-//    });
-//  },
-//
-//  /**
-//   * logging 커맨드 함수
-//   * @returns {Promise<*>}
-//   */
-//  logging: async (message: any) => {
-//    const text = `
-//*Logging*
-//\`\`\`json
-//${JSON.stringify(message, null, 2)}
-//\`\`\`
-//            `;
-//    BOT.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!', text, {
-//      parse_mode: PARSE_MODE,
-//    });
-//    return BOT.sendMessage(message.chat.id, 'Complete!', {
-//      disable_notification: true,
-//    });
-//  },
-//
-//  '/request_user_auth': async (message: any) => {
-//    const text = `
-//request_user_auth!
-//\`\`\`json
-//${JSON.stringify(message, null, 2)}
-//\`\`\`
-//            `;
-//    BOT.sendMessage(process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!', text, {
-//      parse_mode: PARSE_MODE,
-//    });
-//    const resultText = `
-//Request complete!
-//            `;
-//    return BOT.sendMessage(message.chat.id, resultText);
-//  },
-//};
-//
-//const callbacks: any = {
-//  /**
-//   * Sample function
-//   * @param message
-//   * @param type
-//   * @returns {Promise<*>}
-//   */
-//  callback: async (message: any, type = 'type1') => {
-//    try {
-//      // info: logic!
-//      const text = `callback: ${type}`;
-//      return BOT.editMessageText(text, {
-//        chat_id: message.chat.id,
-//        message_id: message.message_id,
-//        parse_mode: PARSE_MODE,
-//      });
-//    } catch (e) {
-//      console.error(`callbacks.callback() Error: ${e}`);
-//      throw e;
-//    }
-//  },
-//};
-//
-//const post = async (event: any) => {
-//  try {
-//    const requestBody = JSON.parse(event.body);
-//    if (requestBody.hasOwnProperty('message')) {
-//      const message = requestBody.message;
-//
-//      if (message.hasOwnProperty('text')) {
-//        if (message.hasOwnProperty('entities') && message.entities.length > 0) {
-//          let promiseList = [];
-//          for (let idx in message.entities) {
-//            const entity = message.entities[idx];
-//            if (entity.type === 'bot_command') {
-//              let result = messageEntities.botCommands.getResult(message, entity);
-//              promiseList.push(result);
-//            }
-//          }
-//          await Promise.all(promiseList);
-//        }
-//      }
-//    }
-//
-//    if (requestBody.hasOwnProperty('callback_query')) {
-//      // console.log(`!!!!!!!!!!!!!!!!요청본문!!!!!!!!!!!!!!!!: ${event.body}`);
-//      const callbackQuery = requestBody.callback_query;
-//      const message = callbackQuery.message;
-//      const data = requestBody.callback_query.data;
-//      await eval(`callbacks.${data}`);
-//      await BOT.sendMessage(
-//        process.env.TELEGRAM_OWNER_CHAT_ID || 'ERROR!',
-//        `
-//*callback_query*
-//\`\`\`
-//${JSON.stringify(callbackQuery, null, 2)}
-//\`\`\`
-//            `,
-//        {
-//          parse_mode: PARSE_MODE,
-//        },
-//      );
-//    }
-//  } catch (e) {
-//    console.error(`Error in ${__filename}:`, e);
-//    throw e;
-//  }
-//};
-//
