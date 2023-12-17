@@ -4,7 +4,6 @@ import { DailyNews } from './DailyNews';
 import * as _ from 'lodash';
 
 export class Webhook {
-  private static webhook: Webhook;
   private readonly telegraf: Telegraf;
   private dailyNews: DailyNews;
   private commandList: {
@@ -28,11 +27,18 @@ export class Webhook {
   /**
    * 생성자
    * @param {Telegraf} telegraf - 텔레그래프 객체
-   * @private
+   * @param {DailyNews} dailyNews - DailyNews 객체
    */
-  private constructor(telegraf: Telegraf) {
+  constructor(telegraf: Telegraf, dailyNews: DailyNews) {
     this.telegraf = telegraf;
-    this.dailyNews = new DailyNews();
+    this.dailyNews = dailyNews;
+    this.init();
+  }
+
+  /**
+   * Webhook 인스턴스를 초기화합니다.
+   */
+  private init() {
     this.setStart();
     this.setHelp();
     this.setCommandList();
@@ -87,15 +93,11 @@ export class Webhook {
   }
 
   /**
-   * Webhook 객체 반환 - 싱글턴
-   * @param {Telegraf} telegraf - 텔레그래프 객체
-   * @returns {Webhook}
+   * 텔레그래프 telegraf 객체를 반환합니다.
+   * @returns {OmitThisParameter<(path?: string, opts?: {secretToken?: string}) => (req: (http.IncomingMessage & {body?: Update | undefined}), res: http.ServerResponse<http.IncomingMessage>, next?: () => void) => Promise<void>>}
    */
-  static getInstance(telegraf: Telegraf): Webhook {
-    if (_.isEmpty(Webhook.webhook) === true) {
-      Webhook.webhook = new Webhook(telegraf);
-    }
-    return Webhook.webhook;
+  get webhookCallback() {
+    return this.telegraf.webhookCallback.bind(this.telegraf);
   }
 }
 

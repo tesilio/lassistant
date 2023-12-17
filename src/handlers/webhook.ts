@@ -1,11 +1,23 @@
-import * as http from 'serverless-http';
-import { TelegramBot } from '../TelegramBot';
+import * as http
+  from 'serverless-http';
+import {
+  Telegraf,
+} from 'telegraf';
+import {
+  Webhook,
+} from '../Webhook';
+import {
+  DailyNews,
+} from '../DailyNews';
+import environment
+  from '../../config/environment';
 
-const telegramBot = TelegramBot.getInstance();
-telegramBot.getWebhook();
+const telegraf = new Telegraf(environment.telegram.token);
+const dailyNews = new DailyNews();
+const webhook = new Webhook(telegraf, dailyNews);
 
 /**
  * 핸들러
  * @type {http.Handler}
  */
-export const handler: http.Handler = http(TelegramBot.getTelegraf().webhookCallback());
+export const handler: http.Handler = http(webhook.webhookCallback());

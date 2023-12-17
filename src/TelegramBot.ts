@@ -1,45 +1,27 @@
-import * as _ from 'lodash';
 import environment from '../config/environment';
 import { Telegraf } from 'telegraf';
 import * as tt from 'telegraf/src/telegram-types';
 import { DailyNews } from './DailyNews';
-import {
-  Webhook
-} from './Webhook';
 
 export class TelegramBot {
-  private static telegramBot: TelegramBot;
-  private static telegraf: Telegraf;
+  private telegraf: Telegraf;
+  private dailyNews: DailyNews;
 
   /**
-   * 생성자
+   * TelegramBot 클래스의 생성자입니다.
+   * @param {Telegraf} telegraf - Telegraf 인스턴스
+   * @param {DailyNews} dailyNews - DailyNews 인스턴스
    */
-  private constructor() {
-    if (_.isEmpty(TelegramBot.telegraf) === true) {
-      TelegramBot.telegraf = new Telegraf(environment.telegram.token);
-    }
-  }
-
-  static getInstance() {
-    if (_.isEmpty(TelegramBot.telegramBot) === true) {
-      TelegramBot.telegramBot = new TelegramBot();
-    }
-    return TelegramBot.telegramBot;
-  }
-
-  static getTelegraf() {
-    if (_.isEmpty(TelegramBot.telegraf) === true) {
-      TelegramBot.telegraf = new Telegraf(environment.telegram.token);
-    }
-    return TelegramBot.telegraf;
+  constructor(telegraf: Telegraf, dailyNews: DailyNews) {
+    this.telegraf = telegraf;
+    this.dailyNews = dailyNews;
   }
 
   /**
-   * 메시지 발송
-   * @async
-   * @param {string} chatId - Chat 아이디
-   * @param {string} message - 메시지
-   * @param {tt.ExtraReplyMessage} options - 옵션
+   * 주어진 채팅 ID에 메시지를 보냅니다.
+   * @param {string} chatId - 메시지를 보낼 채팅 ID
+   * @param {string} message - 보낼 메시지
+   * @param {tt.ExtraReplyMessage} options - 메시지 옵션
    * @returns {Promise<void>}
    */
   async sendMessage(
@@ -50,13 +32,13 @@ export class TelegramBot {
       disable_web_page_preview: true,
     },
   ): Promise<void> {
-    await TelegramBot.telegraf.telegram.sendMessage(chatId, message, options);
+    await this.telegraf.telegram.sendMessage(chatId, message, options);
   }
 
   /**
-   * 에러 메시지 발송
-   * @param error - 에러 객체
-   * @param path - 에러 발생 파일명
+   * 에러 메시지를 보냅니다.
+   * @param {any} error - 보낼 에러
+   * @param {string} path - 에러가 발생한 파일 경로
    * @returns {Promise<void>}
    */
   async sendErrorMessage(error: any, path: string = __filename): Promise<void> {
@@ -71,20 +53,11 @@ ${error}
   }
 
   /**
-   * 뉴스 발송
+   * 일일 뉴스를 보냅니다.
    * @returns {Promise<void>}
    */
   async sendDailyNews(): Promise<void> {
-    const dailyNews = new DailyNews();
-    const message = await dailyNews.getDailyNews();
+    const message = await this.dailyNews.getDailyNews();
     await this.sendMessage(environment.telegram.chatId, message);
-  }
-
-  /**
-   * 웹훅 객체 반환
-   * @returns {Webhook}
-   */
-  getWebhook(): Webhook {
-    return Webhook.getInstance(TelegramBot.getTelegraf());
   }
 }
