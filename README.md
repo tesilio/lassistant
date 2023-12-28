@@ -4,7 +4,16 @@ AWS Lambda 기반 Serverless 텔레그램 봇
 
 ---
 
-### 개발환경 설정
+## 설치
+
+```shell
+yarn install
+```
+
+---
+
+## 텔레그램 봇 생성
+
 1. BotFather와 대화시작
     - http://t.me/BotFather
 2. 새로운 봇 생성
@@ -19,8 +28,9 @@ AWS Lambda 기반 Serverless 텔레그램 봇
 6. 1:1 대화 시작
     - t.me/<봇 계정명>
 
-### 웹훅
-- 예) https://test.execute-api.ap-northeast-2.amazonaws.com/bot/
+---
+
+## 웹훅 설정
 ```
 # <token> 부분을 봇 등록 시 발급받은 토큰으로 대치한다.
 
@@ -34,11 +44,15 @@ curl https://api.telegram.org/bot<token>/setWebhook
 node setWebhook
 ```
 
+---
+
 ## Function invoke
 
 ```shell
 yarn run sls invoke local --function dailyNews -s dev
 ```
+
+---
 
 ## Serverless offline
 ```shell
