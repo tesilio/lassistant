@@ -1,23 +1,20 @@
 import * as cheerio from 'cheerio';
 import { Cheerio, CheerioAPI, Element, SelectorType } from 'cheerio';
 import { default as axios } from 'axios';
-import * as iconv from 'iconv-lite';
 
 /**
  * 뉴스를 가져오는 클래스
  */
 export class DailyNews {
+  private liSelector: string =
+    '#newsct > div.section_latest > div > div.section_latest_article._CONTENT_LIST._PERSIST_META ul > li';
+
   /**
    * 뉴스 URL을 가져오는 getter
    * @returns {URL} 뉴스 URL
    */
   private get url(): URL {
-    const url: URL = new URL('main/list.naver', 'https://news.naver.com');
-    url.searchParams.set('mode', 'LS2d');
-    url.searchParams.set('mid', 'shm');
-    url.searchParams.set('sid1', '105');
-    url.searchParams.set('sid2', '230');
-    return url;
+    return new URL('/breakingnews/section/105/230', 'https://news.naver.com');
   }
 
   /**
@@ -27,20 +24,9 @@ export class DailyNews {
    */
   private async getHtml(url: URL): Promise<any> {
     return axios({
-      url: url.toString(),
-      method: 'GET',
-      responseType: 'arraybuffer',
+      url: url.href,
+      method: 'get',
     });
-  }
-
-  /**
-   * HTML 데이터를 문자열로 변환합니다.
-   * @param {any} html - HTML 데이터
-   * @returns {string} 변환된 문자열
-   */
-  private getContents(html: any): string {
-    const contents = iconv.decode(html.data, 'EUC-KR').toString();
-    return contents.replace(/�/gi, '');
   }
 
   /**
@@ -49,7 +35,8 @@ export class DailyNews {
    * @returns {Cheerio} li 리스트
    */
   private getLiList(cheerioAPI: CheerioAPI): Cheerio<any> {
-    return cheerioAPI('#main_content > div.list_body.newsflash_body > ul.type06_headline li');
+    return cheerioAPI(this.liSelector);
+    //    return cheerioAPI('#main_content > div.list_body.newsflash_body > ul.type06_headline li');
   }
 
   /**
@@ -61,7 +48,7 @@ export class DailyNews {
   private getMessageList(
     cheerioAPI: CheerioAPI,
     liList: Cheerio<
-      '#main_content > div.list_body.newsflash_body > ul.type06_headline li' extends SelectorType
+      '#newsct > div.section_latest > div > div.section_latest_article._CONTENT_LIST._PERSIST_META ul > li' extends SelectorType
         ? Element
         : string
     >,
@@ -71,6 +58,7 @@ export class DailyNews {
       const a = cheerioAPI(li).find('a');
       result.push(`- [${a.text().trim()}](${a.attr('href')?.trim()})`);
     });
+
     return result;
   }
 
@@ -89,8 +77,7 @@ export class DailyNews {
    */
   async getDailyNews(): Promise<string> {
     const html = await this.getHtml(this.url);
-    const contents = this.getContents(html);
-    const cheerioAPI: CheerioAPI = cheerio.load(contents);
+    const cheerioAPI: CheerioAPI = cheerio.load(html.data);
     const liList = this.getLiList(cheerioAPI);
     const messageList = this.getMessageList(cheerioAPI, liList);
     return this.getMessage(messageList);

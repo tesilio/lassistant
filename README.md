@@ -49,7 +49,7 @@ node setWebhook
 ## Function invoke
 
 ```shell
-yarn run sls invoke local --function dailyNews -s dev
+yarn run sls invoke local --function dailyNews -s production
 ```
 
 ---
