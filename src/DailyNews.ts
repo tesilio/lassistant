@@ -1,6 +1,5 @@
-import * as cheerio from 'cheerio';
-import { Cheerio, CheerioAPI, Element, SelectorType } from 'cheerio';
 import { default as axios } from 'axios';
+import { Cheerio, CheerioAPI, load } from 'cheerio';
 
 /**
  * 뉴스를 가져오는 클래스
@@ -45,16 +44,9 @@ export class DailyNews {
    * @param {Cheerio} liList - li 리스트
    * @returns {string[]} 메시지 리스트
    */
-  private getMessageList(
-    cheerioAPI: CheerioAPI,
-    liList: Cheerio<
-      '#newsct > div.section_latest > div > div.section_latest_article._CONTENT_LIST._PERSIST_META ul > li' extends SelectorType
-        ? Element
-        : string
-    >,
-  ): string[] {
+  private getMessageList(cheerioAPI: CheerioAPI, liList: Cheerio<any>): string[] {
     const result: string[] = [];
-    liList.each((_index: number, li: Element) => {
+    liList.each((_index: number, li) => {
       const a = cheerioAPI(li).find('a');
       result.push(`- [${a.text().trim()}](${a.attr('href')?.trim()})`);
     });
@@ -77,7 +69,7 @@ export class DailyNews {
    */
   async getDailyNews(): Promise<string> {
     const html = await this.getHtml(this.url);
-    const cheerioAPI: CheerioAPI = cheerio.load(html.data);
+    const cheerioAPI: CheerioAPI = load(html.data);
     const liList = this.getLiList(cheerioAPI);
     const messageList = this.getMessageList(cheerioAPI, liList);
     return this.getMessage(messageList);

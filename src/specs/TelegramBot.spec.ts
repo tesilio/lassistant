@@ -40,7 +40,9 @@ describe('TelegramBot', () => {
       message,
       expect.objectContaining({
         parse_mode: 'Markdown',
-        disable_web_page_preview: true,
+        link_preview_options: {
+          is_disabled: true,
+        },
       }),
     );
   });
@@ -62,7 +64,9 @@ Error: Mocked error
 `),
       expect.objectContaining({
         parse_mode: 'Markdown',
-        disable_web_page_preview: true,
+        link_preview_options: {
+          is_disabled: true,
+        },
       }),
     );
   });
@@ -79,7 +83,9 @@ Error: Mocked error
       mockNews,
       expect.objectContaining({
         parse_mode: 'Markdown',
-        disable_web_page_preview: true,
+        link_preview_options: {
+          is_disabled: true,
+        },
       }),
     );
   });

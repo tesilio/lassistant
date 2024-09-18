@@ -1,7 +1,7 @@
 import environment from '../config/environment';
 import { Telegraf } from 'telegraf';
-import * as tt from 'telegraf/src/telegram-types';
 import { DailyNews } from './DailyNews';
+import { ExtraReplyMessage } from 'telegraf/typings/telegram-types';
 
 export class TelegramBot {
   private telegraf: Telegraf;
@@ -21,15 +21,17 @@ export class TelegramBot {
    * 주어진 채팅 ID에 메시지를 보냅니다.
    * @param {string} chatId - 메시지를 보낼 채팅 ID
    * @param {string} message - 보낼 메시지
-   * @param {tt.ExtraReplyMessage} options - 메시지 옵션
+   * @param {ExtraReplyMessage} options - 메시지 옵션
    * @returns {Promise<void>}
    */
   async sendMessage(
     chatId: string,
     message: string,
-    options: tt.ExtraReplyMessage = {
+    options: ExtraReplyMessage = {
       parse_mode: 'Markdown',
-      disable_web_page_preview: true,
+      link_preview_options: {
+        is_disabled: true,
+      },
     },
   ): Promise<void> {
     await this.telegraf.telegram.sendMessage(chatId, message, options);
