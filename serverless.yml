@@ -25,6 +25,9 @@ provider:
     TELEGRAM_CHAT_ID: ${self:custom.ENV.TELEGRAM_CHAT_ID}
     TELEGRAM_OWNER_CHAT_ID: ${self:custom.ENV.TELEGRAM_OWNER_CHAT_ID}
     TELEGRAM_BOT_NAME: ${self:custom.ENV.TELEGRAM_BOT_NAME}
+    REDIS_SERVER_HOST: ${self:custom.ENV.REDIS_SERVER_HOST}
+    REDIS_SERVER_PORT: ${self:custom.ENV.REDIS_SERVER_PORT}
+    REDIS_SERVER_PASSWORD: ${self:custom.ENV.REDIS_SERVER_PASSWORD}
     LOCALE: 'ko-KR'
     TIMEZONE: 'Asia/Seoul'
     TZ: 'Asia/Seoul'

@@ -7,8 +7,8 @@ export default {
     botName: process.env.TELEGRAM_BOT_NAME as string,
   },
   redis: {
-    host: process.env.REDIS_HOST as string,
-    port: parseInt(process.env.REDIS_PORT as string),
-    password: process.env.REDIS_PASSWORD as string,
+    host: process.env.REDIS_SERVER_HOST as string,
+    port: parseInt(process.env.REDIS_SERVER_PORT as string),
+    password: process.env.REDIS_SERVER_PASSWORD as string,
   },
 };
