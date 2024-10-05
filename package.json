@@ -17,7 +17,6 @@
     "dayjs": "^1.11.13",
     "lodash": "^4.17.21",
     "redis": "^4.7.0",
-    "redis-om": "^0.4.6",
     "serverless-http": "^3.2.0",
     "telegraf": "^4.16.3"
   },

@@ -7483,11 +7483,6 @@ jsonfile@^6.0.1:
   optionalDependencies:
     graceful-fs "^4.1.6"
 
-jsonpath-plus@^7.2.0:
-  version "7.2.0"
-  resolved "https://registry.npmjs.org/jsonpath-plus/-/jsonpath-plus-7.2.0.tgz"
-  integrity sha512-zBfiUPM5nD0YZSBT/o/fbCUlCcepMIdP0CJZxM1+KgA4f2T206f6VAg9e7mX35+KlMaIc5qXW34f3BnwJ3w+RA==
-
 jsonpath-plus@^9.0.0:
   version "9.0.0"
   resolved "https://registry.npmjs.org/jsonpath-plus/-/jsonpath-plus-9.0.0.tgz"
@@ -7511,11 +7506,6 @@ jszip@^3.10.1:
     pako "~1.0.2"
     readable-stream "~2.3.6"
     setimmediate "^1.0.5"
-
-just-clone@^6.1.1:
-  version "6.2.0"
-  resolved "https://registry.npmjs.org/just-clone/-/just-clone-6.2.0.tgz"
-  integrity sha512-1IynUYEc/HAwxhi3WDpIpxJbZpMCvvrrmZVqvj9EhpvbH8lls7HhdhiByjL7DkAaWlLIzpC0Xc/VPvy/UxLNjA==
 
 jwt-decode@^2.2.0:
   version "2.2.0"
@@ -8482,17 +8472,7 @@ readdirp@~3.6.0:
   dependencies:
     picomatch "^2.2.1"
 
-redis-om@^0.4.6:
-  version "0.4.6"
-  resolved "https://registry.yarnpkg.com/redis-om/-/redis-om-0.4.6.tgz#39cd467693e6049ccdc73d2d50ab1ea1291bba1d"
-  integrity sha512-L6cfZfG+I7ES+hHfBBKQwUEbfmGQJhIvcreP5NgxkxX+LtYLLXrcpP/sIIW1jMyjdgJE1KRjAbiyiuL2AAHe3g==
-  dependencies:
-    jsonpath-plus "^7.2.0"
-    just-clone "^6.1.1"
-    redis "^4.6.4"
-    ulid "^2.3.0"
-
-redis@^4.6.4, redis@^4.7.0:
+redis@^4.7.0:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/redis/-/redis-4.7.0.tgz#b401787514d25dd0cfc22406d767937ba3be55d6"
   integrity sha512-zvmkHEAdGMn+hMRXuMBtu4Vo5P6rHQjLoHftu+lBqq8ZTA3RCVC/WzD790bkKKiNFp7d5/9PcSD19fJyyRvOdQ==
@@ -9451,11 +9431,6 @@ typescript@^4.9.5:
   version "4.9.5"
   resolved "https://registry.npmjs.org/typescript/-/typescript-4.9.5.tgz"
   integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
-
-ulid@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.npmjs.org/ulid/-/ulid-2.3.0.tgz"
-  integrity sha512-keqHubrlpvT6G2wH0OEfSW4mquYRcbe/J8NMmveoQOjUqmo+hXtO+ORCpWhdbZ7k72UtY61BL7haGxW6enBnjw==
 
 unbox-primitive@^1.0.2:
   version "1.0.2"
