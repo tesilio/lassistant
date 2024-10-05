@@ -3,6 +3,10 @@ import { Telegraf } from 'telegraf';
 import { DailyNews } from '../DailyNews';
 import environment from '../../config/environment';
 
+const telegraf = new Telegraf(environment.telegram.token);
+const dailyNews = new DailyNews();
+const telegramBot = new TelegramBot(telegraf, dailyNews);
+
 /**
  * dailyNews 핸들러
  * @returns {Promise<{statusCode: number}>}
@@ -10,9 +14,6 @@ import environment from '../../config/environment';
 export const handler = async (): Promise<{
   statusCode: number;
 }> => {
-  const telegraf = new Telegraf(environment.telegram.token);
-  const dailyNews = new DailyNews();
-  const telegramBot = new TelegramBot(telegraf, dailyNews);
   try {
     await telegramBot.sendDailyNews();
   } catch (e) {
