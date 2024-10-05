@@ -2,5 +2,8 @@
   "TELEGRAM_TOKEN": "${ssm:/lassistant/production/TELEGRAM_TOKEN}",
   "TELEGRAM_BOT_NAME": "${ssm:/lassistant/production/TELEGRAM_BOT_NAME}",
   "TELEGRAM_CHAT_ID": "${ssm:/lassistant/production/TELEGRAM_CHAT_ID}",
-  "TELEGRAM_OWNER_CHAT_ID": "${ssm:/lassistant/production/TELEGRAM_OWNER_CHAT_ID}"
+  "TELEGRAM_OWNER_CHAT_ID": "${ssm:/lassistant/production/TELEGRAM_OWNER_CHAT_ID}",
+  "REDIS_SERVER_HOST": "${ssm:/lassistant/production/REDIS_SERVER_HOST}",
+  "REDIS_SERVER_PORT": "${ssm:/lassistant/production/REDIS_SERVER_PORT}",
+  "REDIS_SERVER_PASSWORD": "${ssm:/lassistant/production/REDIS_SERVER_PASSWORD}"
 }
