@@ -2,7 +2,7 @@ import { default as axios } from 'axios';
 import { Cheerio, CheerioAPI, load } from 'cheerio';
 import * as dayjs from 'dayjs';
 import { PREFIX_REDIS_KEY } from './constant';
-import Redis from './Redis';
+import RedisManager from './RedisManager';
 
 /**
  * 뉴스를 가져오는 클래스
@@ -74,7 +74,7 @@ export class DailyNews {
   private async getCachedMessage(): Promise<string | null> {
     const today = dayjs().format('YYYY-MM-DD');
     const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
-    return await(await Redis.getInstance()).get(messageKey);
+    return await RedisManager.getInstance().get(messageKey);
   }
 
   /**
@@ -87,7 +87,7 @@ export class DailyNews {
   private async setCachedMessage(message: string): Promise<void> {
     const today = dayjs().format('YYYY-MM-DD');
     const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
-    await(await Redis.getInstance()).set(messageKey, message, 3600);
+    await RedisManager.getInstance().set(messageKey, message, 3600);
   }
 
   /**
