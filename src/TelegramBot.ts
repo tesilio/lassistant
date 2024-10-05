@@ -2,6 +2,9 @@ import environment from '../config/environment';
 import { Telegraf } from 'telegraf';
 import { DailyNews } from './DailyNews';
 import { ExtraReplyMessage } from 'telegraf/typings/telegram-types';
+import * as dayjs from 'dayjs';
+import { PREFIX_REDIS_KEY } from './constant';
+import Redis from './Redis';
 
 export class TelegramBot {
   private telegraf: Telegraf;
@@ -59,7 +62,14 @@ ${error}
    * @returns {Promise<void>}
    */
   async sendDailyNews(): Promise<void> {
-    const message = await this.dailyNews.getDailyNews();
+    const today = dayjs().format('YYYY-MM-DD');
+    const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
+    let message = await Redis.getInstance().get(messageKey);
+
+    if (message === null) {
+      message = await this.dailyNews.getDailyNews();
+      await Redis.getInstance().set(messageKey, message, 600);
+    }
     await this.sendMessage(environment.telegram.chatId, message);
   }
 }
