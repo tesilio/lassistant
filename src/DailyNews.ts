@@ -74,7 +74,7 @@ export class DailyNews {
   private async getCachedMessage(): Promise<string | null> {
     const today = dayjs().format('YYYY-MM-DD');
     const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
-    return await Redis.getInstance().get(messageKey);
+    return await(await Redis.getInstance()).get(messageKey);
   }
 
   /**
@@ -87,7 +87,7 @@ export class DailyNews {
   private async setCachedMessage(message: string): Promise<void> {
     const today = dayjs().format('YYYY-MM-DD');
     const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
-    await Redis.getInstance().set(messageKey, message, 300);
+    await(await Redis.getInstance()).set(messageKey, message, 3600);
   }
 
   /**

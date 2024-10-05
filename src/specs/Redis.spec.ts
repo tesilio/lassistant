@@ -5,18 +5,18 @@ describe('Redis', () => {
   let redis: Redis;
   let mockRedisClient: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockRedisClient = createClient();
-    redis = Redis.getInstance();
+    redis = await Redis.getInstance();
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('getInstance 테스트', () => {
-    const instance1 = Redis.getInstance();
-    const instance2 = Redis.getInstance();
+  it('getInstance 테스트', async () => {
+    const instance1 = await Redis.getInstance();
+    const instance2 = await Redis.getInstance();
 
     expect(instance1).toBe(instance2);
   });

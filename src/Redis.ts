@@ -1,35 +1,68 @@
 import environment from '../config/environment';
-import { createClient, RedisClientType } from 'redis';
+import { createClient, RedisClientType, SocketClosedUnexpectedlyError } from 'redis';
+
+let RedisClient: RedisClientType | null;
+
+/**
+ * 레디스 클라이언트 생성
+ * @async
+ * @returns {Promise<RedisClientType>}
+ */
+const createRedisClient = async (): Promise<RedisClientType> => {
+  const client = createClient({
+    url: `redis://${environment.redis.host}:${environment.redis.port}`,
+    password: environment.redis.password,
+  });
+
+  client.on('error', (err) => err);
+
+  await client.connect();
+  return client as RedisClientType;
+};
+
+/**
+ * 레디스 클라이언트 반환
+ * @async
+ * @param {number} tryCount - 재시도 횟수
+ * @returns {Promise<RedisClientType>}
+ */
+const getRedisClient = async (tryCount: number = 1): Promise<RedisClientType> => {
+  try {
+    if (!RedisClient) {
+      RedisClient = await createRedisClient();
+    }
+
+    await RedisClient.ping();
+
+    return RedisClient;
+  } catch (error) {
+    if (error instanceof SocketClosedUnexpectedlyError && tryCount > 0) {
+      RedisClient = null;
+      return getRedisClient(tryCount - 1);
+    }
+
+    console.error('레디스 클라이언트 연결 에러:', error);
+    throw error;
+  }
+};
 
 export default class Redis {
   private static instance: Redis;
-  private client: RedisClientType;
+  client: RedisClientType | null;
 
   /** */
   private constructor() {
-    this.client = createClient({
-      url: `redis://${environment.redis.host}:${environment.redis.port}`,
-      password: environment.redis.password,
-      pingInterval: 2000,
-    });
-
-    this.client
-      .on('error', (err) => {
-        console.error('Redis Client Error', err);
-      })
-      .connect()
-      .catch((error) => {
-        console.error('레디스 클라이언트 연결 에러:', error);
-      });
+    this.client = null;
   }
 
   /**
    * 싱글톤 인스턴스 반환
    * @returns {Redis}
    */
-  public static getInstance(): Redis {
+  public static async getInstance(): Promise<Redis> {
     if (!Redis.instance) {
       Redis.instance = new Redis();
+      Redis.instance.client = await getRedisClient();
     }
     return Redis.instance;
   }
@@ -44,6 +77,9 @@ export default class Redis {
    */
   public async set(key: string, value: string, ttl = 0): Promise<void> {
     try {
+      if (!this.client) {
+        this.client = await getRedisClient();
+      }
       await this.client.set(key, value, {
         EX: ttl,
       });
@@ -61,6 +97,9 @@ export default class Redis {
    */
   public async get(key: string): Promise<string | null> {
     try {
+      if (!this.client) {
+        this.client = await getRedisClient();
+      }
       return await this.client.get(key);
     } catch (error) {
       console.error(`레디스 Get 에러: ${key}`, error);

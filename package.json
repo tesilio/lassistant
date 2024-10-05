@@ -6,7 +6,7 @@
     "sls": "serverless",
     "setWebhook": "ts-node setWebhook.ts",
     "offline-production": "sls offline --stage production",
-    "test": "jest --coverage"
+    "test": "jest"
   },
   "keywords": [],
   "author": "lodcoco@gmail.com",
