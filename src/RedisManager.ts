@@ -19,7 +19,6 @@ const createRedis = (): Redis => {
 /**
  * 레디스 클라이언트 반환
  * @async
- * @param {number} tryCount - 재시도 횟수
  * @returns {Promise<RedisClientType>}
  */
 const getRedis = (): Redis => {
@@ -49,12 +48,12 @@ export default class RedisManager {
   /**
    * Redis에 값을 설정하는 메서드
    * @async
-   * @param {string} key
-   * @param {string} value
-   * @param {number} ttl
+   * @param {string} key - 키
+   * @param {string} value - 값
+   * @param {number} ttl - 만료 시간
    * @returns {Promise<void>}
    */
-  public async set(key: string, value: string, ttl = 0): Promise<void> {
+  public async set(key: string, value: string, ttl: number = 0): Promise<void> {
     try {
       if (!this.redis) {
         this.redis = getRedis();
