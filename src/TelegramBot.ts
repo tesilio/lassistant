@@ -38,6 +38,30 @@ export class TelegramBot {
   }
 
   /**
+   * 여러 메시지를 순차적으로 보냅니다.
+   * @param {string} chatId - 메시지를 보낼 채팅 ID
+   * @param {Array<string>} messages - 보낼 메시지 배열
+   * @param {ExtraReplyMessage} options - 메시지 옵션
+   * @returns {Promise<void>}
+   */
+  async sendMessages(
+    chatId: string,
+    messages: Array<string>,
+    options: ExtraReplyMessage = {
+      parse_mode: 'Markdown',
+      link_preview_options: {
+        is_disabled: true,
+      },
+    },
+  ): Promise<void> {
+    for (const message of messages) {
+      await this.sendMessage(chatId, message, options);
+      // 텔레그램 API 제한 방지를 위한 짧은 지연
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+
+  /**
    * 에러 메시지를 보냅니다.
    * @param {any} error - 보낼 에러
    * @param {string} path - 에러가 발생한 파일 경로
@@ -59,7 +83,7 @@ ${error}
    * @returns {Promise<void>}
    */
   async sendDailyNews(): Promise<void> {
-    const message = await this.dailyNews.getDailyNews();
-    await this.sendMessage(environment.telegram.chatId, message);
+    const messages = await this.dailyNews.getDailyNews();
+    await this.sendMessages(environment.telegram.chatId, messages);
   }
 }

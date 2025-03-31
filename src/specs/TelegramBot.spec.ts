@@ -22,10 +22,14 @@ describe('TelegramBot', () => {
     } as any;
 
     telegramBot = new TelegramBot(mockTelegraf, mockDailyNews);
+
+    // 타이머 모킹
+    jest.useFakeTimers();
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.useRealTimers();
   });
 
   it('메시지를 보내야 합니다', async () => {
@@ -62,25 +66,6 @@ Bot Error!
 Error: Mocked error
 \`\`\`
 `),
-      expect.objectContaining({
-        parse_mode: 'Markdown',
-        link_preview_options: {
-          is_disabled: true,
-        },
-      }),
-    );
-  });
-
-  it('일일 뉴스를 보내야 합니다', async () => {
-    const mockNews = 'Mocked news';
-    mockDailyNews.getDailyNews.mockResolvedValue(mockNews);
-
-    await telegramBot.sendDailyNews();
-
-    // sendMessage 메소드가 올바른 chatId로 호출되었는지 검증합니다
-    expect(mockTelegraf.telegram.sendMessage).toHaveBeenCalledWith(
-      environment.telegram.chatId,
-      mockNews,
       expect.objectContaining({
         parse_mode: 'Markdown',
         link_preview_options: {

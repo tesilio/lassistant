@@ -5,5 +5,6 @@
   "TELEGRAM_OWNER_CHAT_ID": "${ssm:/lassistant/production/TELEGRAM_OWNER_CHAT_ID}",
   "REDIS_SERVER_HOST": "${ssm:/lassistant/production/REDIS_SERVER_HOST}",
   "REDIS_SERVER_PORT": "${ssm:/lassistant/production/REDIS_SERVER_PORT}",
-  "REDIS_SERVER_PASSWORD": "${ssm:/lassistant/production/REDIS_SERVER_PASSWORD}"
+  "REDIS_SERVER_PASSWORD": "${ssm:/lassistant/production/REDIS_SERVER_PASSWORD}",
+  "OPENAI_API_KEY": "${ssm:/lassistant/production/OPENAI_API_KEY}"
 }

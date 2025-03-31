@@ -16,11 +16,16 @@ export class Webhook {
     {
       name: 'news',
       fn: async (ctx: any): Promise<void> => {
-        const news = await this.dailyNews.getDailyNews();
-        ctx.reply(news, {
-          parse_mode: 'Markdown',
-          disable_web_page_preview: true,
-        });
+        const messages = await this.dailyNews.getDailyNews();
+        // 텔레그램 메시지 크기 제한을 고려하여 여러 메시지로 나누어 전송
+        for (const message of messages) {
+          await ctx.reply(message, {
+            parse_mode: 'Markdown',
+            disable_web_page_preview: true,
+          });
+          // 텔레그램 API 제한 방지를 위한 짧은 지연
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
       },
       description: 'IT/과학 관련 뉴스를 제공합니다.',
     },

@@ -14,8 +14,8 @@ provider:
   runtime: nodejs22.x
   stage: ${opt:stage, 'dev'}
   region: ap-northeast-2
-  memorySize: 128 # optional, in MB, default is 1024
-  timeout: 10 # optional, in seconds, default is 10
+  memorySize: 256 # optional, in MB, default is 1024
+  timeout: 120 # optional, in seconds, default is 10
   versionFunctions: false # optional, default is true
 
   environment:
@@ -28,6 +28,7 @@ provider:
     REDIS_SERVER_HOST: ${self:custom.ENV.REDIS_SERVER_HOST}
     REDIS_SERVER_PORT: ${self:custom.ENV.REDIS_SERVER_PORT}
     REDIS_SERVER_PASSWORD: ${self:custom.ENV.REDIS_SERVER_PASSWORD}
+    OPENAI_API_KEY: ${self:custom.ENV.OPENAI_API_KEY}
     LOCALE: 'ko-KR'
     TIMEZONE: 'Asia/Seoul'
     TZ: 'Asia/Seoul'

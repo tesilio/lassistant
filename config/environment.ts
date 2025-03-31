@@ -11,4 +11,7 @@ export default {
     port: parseInt(process.env.REDIS_SERVER_PORT as string),
     password: process.env.REDIS_SERVER_PASSWORD as string,
   },
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY as string,
+  },
 };
