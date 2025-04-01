@@ -14,9 +14,9 @@ provider:
   runtime: nodejs22.x
   stage: ${opt:stage, 'dev'}
   region: ap-northeast-2
-  memorySize: 256 # optional, in MB, default is 1024
-  timeout: 120 # optional, in seconds, default is 10
-  versionFunctions: false # optional, default is true
+  memorySize: 384
+  timeout: 120
+  versionFunctions: false
 
   environment:
     REGION: ${opt:region, 'ap-northeast-2'}

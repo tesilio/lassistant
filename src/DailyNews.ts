@@ -21,7 +21,7 @@ export class DailyNews {
   private liSelector: string =
     '#newsct > div.section_latest > div > div.section_latest_article._CONTENT_LIST._PERSIST_META ul > li';
   private articleContentSelector: string = '#dic_area';
-  private maxArticlesToCrawl: number = 20; // 최대 크롤링할 기사 수
+  private maxArticlesToCrawl: number = 10; // 최대 크롤링할 기사 수
   private maxMessageLength: number = 4000; // 텔레그램 메시지 최대 길이 (여유 있게 설정)
 
   /**
