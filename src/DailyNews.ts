@@ -116,6 +116,7 @@ export class DailyNews {
   /**
    * API 요약 실패 시 사용할 대체 요약 메소드
    * @param {string} text - 요약할 텍스트
+   * @param {number} maxSentences - 최대 문장 수
    * @returns {string} 요약된 텍스트
    */
   private fallbackSummarize(text: string, maxSentences: number = 3): string {

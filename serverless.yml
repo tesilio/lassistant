@@ -35,6 +35,7 @@ provider:
 
 package:
   individually: true
+  excludeDevDependencies: true
   exclude:
     - .idea/**
     - yarn.lock
