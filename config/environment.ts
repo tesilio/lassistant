@@ -14,4 +14,7 @@ export default {
   openai: {
     apiKey: process.env.OPENAI_API_KEY as string,
   },
+  mongo: {
+    uri: process.env.MONGO_URI as string,
+  }
 };
