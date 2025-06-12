@@ -29,7 +29,7 @@ provider:
     REDIS_SERVER_PORT: ${self:custom.ENV.REDIS_SERVER_PORT}
     REDIS_SERVER_PASSWORD: ${self:custom.ENV.REDIS_SERVER_PASSWORD}
     OPENAI_API_KEY: ${self:custom.ENV.OPENAI_API_KEY}
-    MONGODB_URI: ${self:custom.ENV.MONGODB_URI}
+    MONGO_URI: ${self:custom.ENV.MONGO_URI}
     LOCALE: 'ko-KR'
     TIMEZONE: 'Asia/Seoul'
     TZ: 'Asia/Seoul'

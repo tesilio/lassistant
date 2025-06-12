@@ -57,9 +57,9 @@ export class DailyNews {
    * li 리스트에서 뉴스 정보를 가져옵니다.
    * @param {CheerioAPI} cheerioAPI - CheerioAPI 인스턴스
    * @param {Cheerio} liList - li 리스트
-   * @returns {Array<NewsInfo>} 뉴스 정보 리스트
+   * @returns {NewsInfo[]} 뉴스 정보 리스트
    */
-  private getNewsInfoList(cheerioAPI: CheerioAPI, liList: Cheerio<any>): Array<NewsInfo> {
+  private getNewsInfoList(cheerioAPI: CheerioAPI, liList: Cheerio<any>): NewsInfo[] {
     const result: Array<NewsInfo> = [];
     //@ts-ignore
     liList.each((_index: number, li) => {
@@ -136,15 +136,15 @@ export class DailyNews {
 
   /**
    * 기사 정보와 요약된 내용을 포함한 메시지를 생성합니다.
-   * @param {Array<NewsInfo>} newsInfoList - 뉴스 정보 리스트
-   * @returns {Array<string>} 생성된 메시지 배열
+   * @param {NewsInfo[]} newsInfoList - 뉴스 정보 리스트
+   * @returns {string[]} 생성된 메시지 배열
    */
-  private getMessages(newsInfoList: Array<NewsInfo>): Array<string> {
+  private getMessagesForTelegram(newsInfoList: NewsInfo[]): string[] {
     // 각 뉴스 항목을 문자열로 변환
     const newsItems = newsInfoList.map((news) => {
       let message = `- [${news.title}](${news.url})`;
       if (news.summary) {
-        message += `\n  요약: ${news.summary}`;
+        message += `\n${news.summary}`;
       }
       return message;
     });
@@ -238,7 +238,7 @@ export class DailyNews {
       }
     }
 
-    const messages = this.getMessages(newsInfoList);
+    const messages = this.getMessagesForTelegram(newsInfoList);
     await this.setCachedMessages(messages);
 
     return messages;

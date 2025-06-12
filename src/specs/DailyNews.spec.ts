@@ -1,31 +1,44 @@
 import { DailyNews } from '../DailyNews';
 import axios from 'axios';
 import * as MockAdapter from 'axios-mock-adapter';
-import RedisManager from '../RedisManager';
-import OpenAIManager from '../OpenAIManager';
+
+// 환경 변수 모킹 (Redis 포트 에러 방지)
+jest.mock('../../config/environment', () => ({
+  default: {
+    redis: {
+      host: 'localhost',
+      port: 6379,
+      password: undefined,
+    },
+    openai: {
+      apiKey: 'test-api-key',
+    },
+  },
+}));
+
+// Mock 인스턴스들을 전역에서 선언
+const mockRedisInstance = {
+  get: jest.fn().mockResolvedValue(null),
+  set: jest.fn().mockResolvedValue(undefined),
+};
+
+const mockOpenAIInstance = {
+  summarizeText: jest.fn().mockResolvedValue('OpenAI로 요약된 내용입니다.'),
+};
 
 // RedisManager 모킹
-jest.mock('../RedisManager', () => {
-  return {
-    default: {
-      getInstance: jest.fn().mockReturnValue({
-        get: jest.fn().mockResolvedValue(null),
-        set: jest.fn().mockResolvedValue(undefined),
-      }),
-    },
-  };
-});
+jest.mock('../RedisManager', () => ({
+  default: {
+    getInstance: jest.fn(() => mockRedisInstance),
+  },
+}));
 
 // OpenAIManager 모킹
-jest.mock('../OpenAIManager', () => {
-  return {
-    default: {
-      getInstance: jest.fn().mockReturnValue({
-        summarizeText: jest.fn().mockResolvedValue('OpenAI로 요약된 내용입니다.'),
-      }),
-    },
-  };
-});
+jest.mock('../OpenAIManager', () => ({
+  default: {
+    getInstance: jest.fn(() => mockOpenAIInstance),
+  },
+}));
 
 describe('DailyNews', () => {
   let mockAxios: MockAdapter;
@@ -46,7 +59,7 @@ describe('DailyNews', () => {
 
   // 'getDailyNews' 메서드가 일일 뉴스를 가져오는지 테스트합니다.
   it('일일 뉴스를 가져옵니다', async () => {
-    // 뉴스 목록 페이지 HTML 모킹
+    // 뉴스 목록 페이지 HTML 모킹 (URL 업데이트)
     const mockHtml =
       '<html><body><div id="newsct"><div class="section_latest"><div><div class="section_latest_article _CONTENT_LIST _PERSIST_META"><ul><li><a href="https://news.naver.com/main/read.naver?mode=LS2D&mid=shm&sid1=105&sid2=230&oid=001&aid=0012576808">Mock News Title</a></li></ul></div></div></div></div></body></html>';
     mockAxios.onGet('https://news.naver.com/breakingnews/section/105/230').reply(200, mockHtml);
@@ -75,7 +88,7 @@ describe('DailyNews', () => {
     );
     expect(messages[0]).toContain('OpenAI로 요약된 내용입니다.');
 
-    // 첫 번째 요청: 뉴스 목록 페이지를 가져오는지 확인
+    // 첫 번째 요청: 뉴스 목록 페이지를 가져오는지 확인 (URL 업데이트)
     expect(mockAxios.history.get[0].url).toEqual(
       'https://news.naver.com/breakingnews/section/105/230',
     );
@@ -86,10 +99,10 @@ describe('DailyNews', () => {
     );
 
     // OpenAIManager가 호출되었는지 확인
-    expect(OpenAIManager.getInstance().summarizeText).toHaveBeenCalled();
+    expect(mockOpenAIInstance.summarizeText).toHaveBeenCalled();
 
     // 캐시에 메시지 배열이 저장되었는지 확인
-    expect(RedisManager.getInstance().set).toHaveBeenCalledWith(
+    expect(mockRedisInstance.set).toHaveBeenCalledWith(
       expect.stringContaining('dailyNews'),
       expect.any(String),
       expect.any(Number),
@@ -100,7 +113,7 @@ describe('DailyNews', () => {
   it('캐시된 뉴스를 가져옵니다', async () => {
     const cachedMessages = ['Cached news 1', 'Cached news 2'];
     // RedisManager의 get 메서드가 캐시된 값을 반환하도록 설정
-    (RedisManager.getInstance() as any).get.mockResolvedValueOnce(JSON.stringify(cachedMessages));
+    mockRedisInstance.get.mockResolvedValueOnce(JSON.stringify(cachedMessages));
 
     const messages = await dailyNews.getDailyNews();
 
@@ -109,15 +122,15 @@ describe('DailyNews', () => {
     // axios가 호출되지 않았는지 확인 (캐시에서만 데이터를 가져왔는지)
     expect(mockAxios.history.get.length).toBe(0);
     // OpenAIManager가 호출되지 않았는지 확인
-    expect(OpenAIManager.getInstance().summarizeText).not.toHaveBeenCalled();
+    expect(mockOpenAIInstance.summarizeText).not.toHaveBeenCalled();
   });
 
   // 캐시된 메시지 파싱 실패 테스트
   it('캐시된 메시지 파싱 실패 시 새로운 뉴스를 가져옵니다', async () => {
     // 잘못된 형식의 JSON 캐시 데이터 설정
-    (RedisManager.getInstance() as any).get.mockResolvedValueOnce('{invalid json}');
+    mockRedisInstance.get.mockResolvedValueOnce('{invalid json}');
 
-    // 뉴스 목록 페이지 HTML 모킹
+    // 뉴스 목록 페이지 HTML 모킹 (URL 업데이트)
     const mockHtml =
       '<html><body><div id="newsct"><div class="section_latest"><div><div class="section_latest_article _CONTENT_LIST _PERSIST_META"><ul><li><a href="https://news.naver.com/main/read.naver?mode=LS2D&mid=shm&sid1=105&sid2=230&oid=001&aid=0012576808">Mock News Title</a></li></ul></div></div></div></div></body></html>';
     mockAxios.onGet('https://news.naver.com/breakingnews/section/105/230').reply(200, mockHtml);
@@ -143,7 +156,7 @@ describe('DailyNews', () => {
 
   // 메시지 길이 제한으로 인한 메시지 분할 테스트를 위한 모킹 헬퍼 함수
   const mockLongArticles = (count: number, longSummary: boolean = false) => {
-    // 뉴스 목록 페이지 HTML 모킹
+    // 뉴스 목록 페이지 HTML 모킹 (URL 업데이트)
     let htmlContent =
       '<html><body><div id="newsct"><div class="section_latest"><div><div class="section_latest_article _CONTENT_LIST _PERSIST_META"><ul>';
 
@@ -162,7 +175,7 @@ describe('DailyNews', () => {
 
       // OpenAI 요약 모킹
       if (longSummary) {
-        (OpenAIManager.getInstance().summarizeText as jest.Mock).mockResolvedValueOnce(
+        mockOpenAIInstance.summarizeText.mockResolvedValueOnce(
           '이것은 매우 긴 요약입니다. '.repeat(50),
         );
       }
