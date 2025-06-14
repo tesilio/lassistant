@@ -13,12 +13,12 @@
   "author": "lodcoco@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "axios": "^1.9.0",
+    "axios": "^1.10.0",
     "cheerio": "^1.1.0",
     "dayjs": "^1.11.13",
     "ioredis": "^5.6.1",
     "lodash": "^4.17.21",
-    "mongoose": "^8.15.1",
+    "mongoose": "^8.15.2",
     "openai": "^4.104.0",
     "serverless-http": "^3.2.0",
     "telegraf": "^4.16.3"
@@ -27,7 +27,7 @@
     "@types/aws-lambda": "^8.10.149",
     "@types/ioredis-mock": "^8.2.6",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.15.30",
+    "@types/node": "^22.15.31",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "axios-mock-adapter": "^1.22.0",
@@ -40,7 +40,7 @@
     "serverless": "^3.40.0",
     "serverless-offline": "^13.9.0",
     "serverless-plugin-typescript": "^2.1.5",
-    "ts-jest": "^29.3.4",
+    "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
