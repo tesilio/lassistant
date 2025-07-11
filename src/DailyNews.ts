@@ -184,18 +184,19 @@ export class DailyNews {
    * @private
    */
   private async getCachedMessages(): Promise<Array<string> | null> {
-    const today = dayjs().format('YYYY-MM-DD');
-    const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
-    const cachedData = await RedisManager.getInstance().get(messageKey);
-
-    if (cachedData) {
-      try {
-        return JSON.parse(cachedData);
-      } catch (error) {
-        console.error('캐시된 메시지 파싱 실패:', error);
-        return null;
-      }
-    }
+    // todo: 레디스 연결 복구하기 전까지 주석 처리
+//    const today = dayjs().format('YYYY-MM-DD');
+//    const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
+//    const cachedData = await RedisManager.getInstance().get(messageKey);
+//
+//    if (cachedData) {
+//      try {
+//        return JSON.parse(cachedData);
+//      } catch (error) {
+//        console.error('캐시된 메시지 파싱 실패:', error);
+//        return null;
+//      }
+//    }
 
     return null;
   }
@@ -208,9 +209,11 @@ export class DailyNews {
    * @private
    */
   private async setCachedMessages(messages: Array<string>): Promise<void> {
-    const today = dayjs().format('YYYY-MM-DD');
-    const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
-    await RedisManager.getInstance().set(messageKey, JSON.stringify(messages), 3600);
+    // todo: 레디스 연결 복구하기 전까지 주석 처리
+//    const today = dayjs().format('YYYY-MM-DD');
+//    const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
+//    await RedisManager.getInstance().set(messageKey, JSON.stringify(messages), 3600);
+    console.log(messages);
   }
 
   /**
