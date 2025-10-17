@@ -41,12 +41,16 @@ export default class OpenAIManager {
         return text;
       }
 
+      const currentDate = new Date().toISOString().split('T')[0];
+
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: `당신은 전문적인 뉴스 요약 전문가입니다. 다음 가이드라인을 따라 기사를 요약해주세요:
+            content: `현재 날짜: ${currentDate}
+
+당신은 전문적인 뉴스 요약 전문가입니다. 다음 가이드라인을 따라 기사를 요약해주세요:
 
 1. 핵심 내용: 누가, 언제, 어디서, 무엇을, 왜, 어떻게의 요소 중 중요한 것들을 포함
 2. 길이: 2-3문장으로 간결하게 요약
