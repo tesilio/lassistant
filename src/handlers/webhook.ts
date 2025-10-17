@@ -1,4 +1,5 @@
-import * as http from 'serverless-http';
+import serverlessHttp from 'serverless-http';
+import { Handler } from 'aws-lambda';
 import { Telegraf } from 'telegraf';
 import { Webhook } from '../Webhook';
 import { DailyNews } from '../DailyNews';
@@ -10,6 +11,5 @@ const webhook = new Webhook(telegraf, dailyNews);
 
 /**
  * 핸들러
- * @type {http.Handler}
  */
-export const handler: http.Handler = http(webhook.webhookCallback());
+export const handler: Handler = serverlessHttp(webhook.webhookCallback());
