@@ -7,6 +7,7 @@ describe('TelegramBot', () => {
   let telegramBot: TelegramBot;
   let mockTelegraf: jest.Mocked<Telegraf>;
   let mockDailyNews: jest.Mocked<DailyNews>;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     // Telegraf 라이브러리를 모킹합니다
@@ -23,6 +24,9 @@ describe('TelegramBot', () => {
 
     telegramBot = new TelegramBot(mockTelegraf, mockDailyNews);
 
+    // console.error를 모킹합니다
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
     // 타이머 모킹
     jest.useFakeTimers();
   });
@@ -30,6 +34,7 @@ describe('TelegramBot', () => {
   afterEach(() => {
     jest.clearAllMocks();
     jest.useRealTimers();
+    consoleErrorSpy.mockRestore();
   });
 
   it('메시지를 보내야 합니다', async () => {

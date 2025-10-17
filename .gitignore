@@ -120,3 +120,4 @@ dist
 .idea
 config/config.js
 .build
+env/dev.json

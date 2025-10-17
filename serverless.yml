@@ -3,7 +3,6 @@ service: lassistant
 # 플러그인
 plugins:
   - serverless-offline
-  - serverless-plugin-typescript
 
 custom:
   ENV: ${file(./env/${self:provider.stage}.json)}
