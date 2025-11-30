@@ -232,34 +232,44 @@ export default class WeatherAPIManager {
       eveningPrecipType: '없음',
     };
 
+    // info: TMN/TMX는 오늘 또는 내일 날짜에서 찾기
+    const tmnItem = items.find((item) => item.category === 'TMN');
+    const tmxItem = items.find((item) => item.category === 'TMX');
+
+    if (tmnItem) {
+      result.minTemp = parseFloat(tmnItem.fcstValue || '0');
+    }
+    if (tmxItem) {
+      result.maxTemp = parseFloat(tmxItem.fcstValue || '0');
+    }
+
+    // info: 하늘 상태와 강수 정보는 오늘 데이터에서 시간대별로 수집
+    const morningTimes = ['0600', '0700', '0800', '0900', '1000', '1100'];
+    const afternoonTimes = ['1200', '1300', '1400', '1500', '1600', '1700'];
+    const eveningTimes = ['1800', '1900', '2000', '2100', '2200', '2300'];
+
     todayItems.forEach((item) => {
       const fcstTime = item.fcstTime || '';
       const fcstValue = item.fcstValue || '';
 
       switch (item.category) {
-        case 'TMN': // 최저기온
-          result.minTemp = parseFloat(fcstValue);
-          break;
-        case 'TMX': // 최고기온
-          result.maxTemp = parseFloat(fcstValue);
-          break;
         case 'POP': // 강수확률
           // case: 오전 (06-12시)
-          if (fcstTime >= '0600' && fcstTime < '1200') {
+          if (morningTimes.includes(fcstTime)) {
             result.morningPrecipProb = Math.max(
               result.morningPrecipProb,
               parseInt(fcstValue, 10)
             );
           }
           // case: 오후 (12-18시)
-          else if (fcstTime >= '1200' && fcstTime < '1800') {
+          else if (afternoonTimes.includes(fcstTime)) {
             result.afternoonPrecipProb = Math.max(
               result.afternoonPrecipProb,
               parseInt(fcstValue, 10)
             );
           }
           // case: 저녁 (18-24시)
-          else if (fcstTime >= '1800') {
+          else if (eveningTimes.includes(fcstTime)) {
             result.eveningPrecipProb = Math.max(
               result.eveningPrecipProb,
               parseInt(fcstValue, 10)
@@ -268,31 +278,39 @@ export default class WeatherAPIManager {
           break;
         case 'SKY': // 하늘상태
           const skyText = getSkyConditionText(fcstValue);
-          // case: 오전 (09시 기준)
-          if (fcstTime === '0900') {
+          // case: 오전 시간대 중 아직 데이터가 없으면 업데이트
+          if (morningTimes.includes(fcstTime) && result.morningCondition === '알 수 없음') {
             result.morningCondition = skyText;
           }
-          // case: 오후 (15시 기준)
-          else if (fcstTime === '1500') {
+          // case: 오후 시간대 중 아직 데이터가 없으면 업데이트
+          else if (
+            afternoonTimes.includes(fcstTime) &&
+            result.afternoonCondition === '알 수 없음'
+          ) {
             result.afternoonCondition = skyText;
           }
-          // case: 저녁 (21시 기준)
-          else if (fcstTime === '2100') {
+          // case: 저녁 시간대 중 아직 데이터가 없으면 업데이트
+          else if (
+            eveningTimes.includes(fcstTime) &&
+            result.eveningCondition === '알 수 없음'
+          ) {
             result.eveningCondition = skyText;
           }
           break;
         case 'PTY': // 강수형태
           const precipText = getPrecipitationTypeText(fcstValue);
-          // case: 오전 (09시 기준)
-          if (fcstTime === '0900' && fcstValue !== '0') {
+          if (fcstValue === '0') break; // case: 강수 없으면 스킵
+
+          // case: 오전 시간대
+          if (morningTimes.includes(fcstTime)) {
             result.morningPrecipType = precipText;
           }
-          // case: 오후 (15시 기준)
-          else if (fcstTime === '1500' && fcstValue !== '0') {
+          // case: 오후 시간대
+          else if (afternoonTimes.includes(fcstTime)) {
             result.afternoonPrecipType = precipText;
           }
-          // case: 저녁 (21시 기준)
-          else if (fcstTime === '2100' && fcstValue !== '0') {
+          // case: 저녁 시간대
+          else if (eveningTimes.includes(fcstTime)) {
             result.eveningPrecipType = precipText;
           }
           break;

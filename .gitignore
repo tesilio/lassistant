@@ -121,3 +121,6 @@ dist
 config/config.js
 .build
 env/dev.json
+
+# debug and test files
+debug/
