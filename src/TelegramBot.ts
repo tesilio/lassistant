@@ -80,10 +80,23 @@ ${error}
 
   /**
    * 일일 뉴스를 보냅니다.
+   * @async
    * @returns {Promise<void>}
    */
   async sendDailyNews(): Promise<void> {
     const messages = await this.dailyNews.getDailyNews();
+    await this.sendMessages(environment.telegram.chatId, messages);
+  }
+
+  /**
+   * 일일 날씨를 보냅니다.
+   * @async
+   * @returns {Promise<void>}
+   */
+  async sendDailyWeather(): Promise<void> {
+    const { DailyWeather } = await import('./DailyWeather');
+    const dailyWeather = new DailyWeather();
+    const messages = await dailyWeather.getDailyWeather();
     await this.sendMessages(environment.telegram.chatId, messages);
   }
 }

@@ -7,5 +7,9 @@
   "REDIS_SERVER_PORT": "${ssm:/lassistant/production/REDIS_SERVER_PORT}",
   "REDIS_SERVER_PASSWORD": "${ssm:/lassistant/production/REDIS_SERVER_PASSWORD}",
   "OPENAI_API_KEY": "${ssm:/lassistant/production/OPENAI_API_KEY}",
-  "MONGO_URI": "${ssm:/lassistant/production/MONGO_URI}"
+  "MONGO_URI": "${ssm:/lassistant/production/MONGO_URI}",
+  "DATA_GO_API_KEY": "${ssm:/lassistant/production/DATA_GO_API_KEY}",
+  "WEATHER_NX": 61,
+  "WEATHER_NY": 126,
+  "WEATHER_STATION": "강남구"
 }

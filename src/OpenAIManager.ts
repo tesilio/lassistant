@@ -90,4 +90,87 @@ ${currentDate}
       throw error;
     }
   }
+
+  /**
+   * 날씨 정보 기반 옷차림 추천 생성
+   * @async
+   * @param {object} weatherData - 날씨 정보
+   * @param {number} weatherData.currentTemp - 현재 기온
+   * @param {number} weatherData.feelsLikeTemp - 체감온도
+   * @param {number} weatherData.minTemp - 최저기온
+   * @param {number} weatherData.maxTemp - 최고기온
+   * @param {number} weatherData.morningPrecipProb - 오전 강수확률
+   * @param {number} weatherData.afternoonPrecipProb - 오후 강수확률
+   * @param {number} weatherData.eveningPrecipProb - 저녁 강수확률
+   * @param {string} weatherData.skyCondition - 하늘 상태
+   * @param {number} weatherData.pm10Grade - 미세먼지 등급
+   * @returns {Promise<string>} 옷차림 추천 텍스트
+   */
+  public async generateClothingAdvice(weatherData: {
+    currentTemp: number;
+    feelsLikeTemp: number;
+    minTemp: number;
+    maxTemp: number;
+    morningPrecipProb: number;
+    afternoonPrecipProb: number;
+    eveningPrecipProb: number;
+    skyCondition: string;
+    pm10Grade: number;
+  }): Promise<string> {
+    try {
+      const systemPrompt = `당신은 날씨 정보를 바탕으로 실용적인 옷차림을 추천하는 전문가입니다.
+
+# 입력 정보
+- 현재 기온 및 체감온도
+- 오늘 최저/최고 기온
+- 강수 확률 및 날씨 상태
+- 미세먼지 등급
+
+# 추천 규칙
+1. **체감온도 기반**: 실제 기온보다 체감온도를 우선 고려
+2. **일교차 고려**: 최저-최고 기온 차이가 8도 이상이면 겉옷 추천
+3. **날씨 상태**: 비/눈 예보 시 우산/방수 옷 언급
+4. **대기질**: 미세먼지 나쁨 이상일 때 마스크 착용 권장
+5. **자연스러운 문장**: 2-4문장의 친근한 톤
+
+# 출력 형식
+추천 내용만 출력하고, 다른 설명은 포함하지 마세요.`;
+
+      const pm10GradeText =
+        weatherData.pm10Grade === 1
+          ? '좋음'
+          : weatherData.pm10Grade === 2
+            ? '보통'
+            : weatherData.pm10Grade === 3
+              ? '나쁨'
+              : '매우나쁨';
+
+      const userPrompt = `
+현재 기온: ${weatherData.currentTemp}°C
+체감온도: ${weatherData.feelsLikeTemp}°C
+최저/최고: ${weatherData.minTemp}°C / ${weatherData.maxTemp}°C
+오전 강수확률: ${weatherData.morningPrecipProb}%
+오후 강수확률: ${weatherData.afternoonPrecipProb}%
+저녁 강수확률: ${weatherData.eveningPrecipProb}%
+하늘: ${weatherData.skyCondition}
+미세먼지: ${pm10GradeText}
+
+위 날씨 정보를 바탕으로 옷차림을 추천해주세요.`;
+
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.5,
+        max_completion_tokens: 200,
+      });
+
+      return response.choices[0].message.content?.trim() || '';
+    } catch (error) {
+      console.error('OpenAI API 옷차림 추천 실패:', error);
+      throw error;
+    }
+  }
 }

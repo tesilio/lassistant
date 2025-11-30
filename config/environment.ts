@@ -16,5 +16,11 @@ export default {
   },
   mongo: {
     uri: process.env.MONGO_URI as string,
-  }
+  },
+  weather: {
+    dataGoApiKey: process.env.DATA_GO_API_KEY as string,
+    nx: Number(process.env.WEATHER_NX) || 61,
+    ny: Number(process.env.WEATHER_NY) || 126,
+    station: process.env.WEATHER_STATION as string,
+  },
 };
