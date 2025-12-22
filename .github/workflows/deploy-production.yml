@@ -31,7 +31,9 @@ jobs:
         run: npm install -g yarn && yarn install
 
       - name: Serverless Deploy
-        run: yarn sls deploy --stage production --verbose
+        uses: serverless/github-action@v3.2
+        with:
+          args: deploy -s production --verbose
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
