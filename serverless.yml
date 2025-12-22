@@ -1,5 +1,16 @@
 service: lassistant
 
+# 빌드 설정 (Serverless v4 내장 ESBuild)
+build:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    target: node22
+    platform: node
+    exclude:
+      - aws-sdk
+
 # 플러그인
 plugins:
   - serverless-offline
