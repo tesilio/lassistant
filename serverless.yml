@@ -2,11 +2,19 @@ service: lassistant
 
 # 플러그인
 plugins:
+  - serverless-esbuild
   - serverless-offline
-  - serverless-plugin-typescript
 
 custom:
   ENV: ${file(./env/${self:provider.stage}.json)}
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    platform: node
+    target: node22
+    exclude:
+      - aws-sdk
 
 # 제공자
 provider:
