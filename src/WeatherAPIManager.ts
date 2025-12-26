@@ -96,16 +96,21 @@ export default class WeatherAPIManager {
   }
 
   /**
+   * 싱글톤 인스턴스 리셋 (테스트 전용)
+   * @internal
+   */
+  public static resetInstance(): void {
+    WeatherAPIManager.instance = undefined as unknown as WeatherAPIManager;
+  }
+
+  /**
    * 초단기실황 조회 (현재 날씨)
    * @async
    * @param {number} nx - 격자 X 좌표
    * @param {number} ny - 격자 Y 좌표
    * @returns {Promise<UltraShortWeather>} 초단기실황 날씨 정보
    */
-  public async getUltraShortTermForecast(
-    nx: number,
-    ny: number
-  ): Promise<UltraShortWeather> {
+  public async getUltraShortTermForecast(nx: number, ny: number): Promise<UltraShortWeather> {
     const now = dayjs();
     const baseDate = now.format('YYYYMMDD');
     // info: 초단기실황은 매시간 30분에 생성되므로, 현재 시각 기준 이전 정시 사용
@@ -256,24 +261,18 @@ export default class WeatherAPIManager {
         case 'POP': // 강수확률
           // case: 오전 (06-12시)
           if (morningTimes.includes(fcstTime)) {
-            result.morningPrecipProb = Math.max(
-              result.morningPrecipProb,
-              parseInt(fcstValue, 10)
-            );
+            result.morningPrecipProb = Math.max(result.morningPrecipProb, parseInt(fcstValue, 10));
           }
           // case: 오후 (12-18시)
           else if (afternoonTimes.includes(fcstTime)) {
             result.afternoonPrecipProb = Math.max(
               result.afternoonPrecipProb,
-              parseInt(fcstValue, 10)
+              parseInt(fcstValue, 10),
             );
           }
           // case: 저녁 (18-24시)
           else if (eveningTimes.includes(fcstTime)) {
-            result.eveningPrecipProb = Math.max(
-              result.eveningPrecipProb,
-              parseInt(fcstValue, 10)
-            );
+            result.eveningPrecipProb = Math.max(result.eveningPrecipProb, parseInt(fcstValue, 10));
           }
           break;
         case 'SKY': // 하늘상태
@@ -290,10 +289,7 @@ export default class WeatherAPIManager {
             result.afternoonCondition = skyText;
           }
           // case: 저녁 시간대 중 아직 데이터가 없으면 업데이트
-          else if (
-            eveningTimes.includes(fcstTime) &&
-            result.eveningCondition === '알 수 없음'
-          ) {
+          else if (eveningTimes.includes(fcstTime) && result.eveningCondition === '알 수 없음') {
             result.eveningCondition = skyText;
           }
           break;
@@ -329,10 +325,7 @@ export default class WeatherAPIManager {
    * @param {number} maxRetries - 최대 재시도 횟수
    * @returns {Promise<T>}
    */
-  private async retryRequest<T>(
-    fn: () => Promise<T>,
-    maxRetries: number = 3
-  ): Promise<T> {
+  private async retryRequest<T>(fn: () => Promise<T>, maxRetries: number = 3): Promise<T> {
     let lastError: Error | undefined;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
