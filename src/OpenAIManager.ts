@@ -30,6 +30,14 @@ export default class OpenAIManager {
   }
 
   /**
+   * 싱글톤 인스턴스 리셋 (테스트 전용)
+   * @internal
+   */
+  public static resetInstance(): void {
+    OpenAIManager.instance = undefined as unknown as OpenAIManager;
+  }
+
+  /**
    * 텍스트를 요약합니다.
    * @param {string} text - 요약할 텍스트
    * @returns {Promise<string>} 요약된 텍스트
