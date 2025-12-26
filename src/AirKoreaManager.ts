@@ -113,6 +113,14 @@ export default class AirKoreaManager {
   }
 
   /**
+   * 싱글톤 인스턴스 리셋 (테스트 전용)
+   * @internal
+   */
+  public static resetInstance(): void {
+    AirKoreaManager.instance = undefined as unknown as AirKoreaManager;
+  }
+
+  /**
    * 특정 지역의 측정소 목록 조회
    * @async
    * @param {string} addr - 지역명 (예: '강남구')
@@ -204,10 +212,7 @@ export default class AirKoreaManager {
    * @param {number} maxRetries - 최대 재시도 횟수
    * @returns {Promise<T>}
    */
-  private async retryRequest<T>(
-    fn: () => Promise<T>,
-    maxRetries: number = 3
-  ): Promise<T> {
+  private async retryRequest<T>(fn: () => Promise<T>, maxRetries: number = 3): Promise<T> {
     let lastError: Error | undefined;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
