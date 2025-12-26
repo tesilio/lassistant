@@ -1,8 +1,6 @@
 import { default as axios } from 'axios';
 import { Cheerio, CheerioAPI, load } from 'cheerio';
 import dayjs from 'dayjs';
-//import { PREFIX_REDIS_KEY } from './constant';
-//import RedisManager from './RedisManager';
 import OpenAIManager from './OpenAIManager';
 
 /**
@@ -178,61 +176,16 @@ export class DailyNews {
   }
 
   /**
-   * 캐시된 메시지를 가져옵니다.
-   * @async
-   * @returns {Promise<Array<string> | null>}
-   * @private
-   */
-  private async getCachedMessages(): Promise<Array<string> | null> {
-    // todo: 레디스 연결 복구하기 전까지 주석 처리
-    //    const today = dayjs().format('YYYY-MM-DD');
-    //    const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
-    //    const cachedData = await RedisManager.getInstance().get(messageKey);
-    //
-    //    if (cachedData) {
-    //      try {
-    //        return JSON.parse(cachedData);
-    //      } catch (error) {
-    //        console.error('캐시된 메시지 파싱 실패:', error);
-    //        return null;
-    //      }
-    //    }
-
-    return null;
-  }
-
-  /**
-   * 뉴스를 캐시합니다.
-   * @async
-   * @param {Array<string>} messages - 캐시할 메시지 배열
-   * @returns {Promise<void>}
-   * @private
-   */
-  private async setCachedMessages(_messages: Array<string>): Promise<void> {
-    // todo: 레디스 연결 복구하기 전까지 주석 처리
-    //    const today = dayjs().format('YYYY-MM-DD');
-    //    const messageKey = `${PREFIX_REDIS_KEY}:dailyNews:${today}`;
-    //    await RedisManager.getInstance().set(messageKey, JSON.stringify(messages), 3600);
-  }
-
-  /**
    * 일일 뉴스를 가져옵니다.
+   * @async
    * @returns {Promise<Array<string>>} 뉴스 메시지 배열을 담은 Promise
    */
   async getDailyNews(): Promise<Array<string>> {
-    const cachedMessages = await this.getCachedMessages();
-
-    // case: 캐시된 메시지가 있을 경우
-    if (cachedMessages !== null) {
-      return cachedMessages;
-    }
-
     const html = await this.getHtml(this.url);
     const cheerioAPI: CheerioAPI = load(html.data);
     const liList = this.getLiList(cheerioAPI);
     const newsInfoList = this.getNewsInfoList(cheerioAPI, liList);
 
-    // 각 기사의 내용을 가져와서 요약
     for (const newsInfo of newsInfoList) {
       const content = await this.getArticleContent(newsInfo.url);
       if (content) {
@@ -240,9 +193,6 @@ export class DailyNews {
       }
     }
 
-    const messages = this.getMessagesForTelegram(newsInfoList);
-    await this.setCachedMessages(messages);
-
-    return messages;
+    return this.getMessagesForTelegram(newsInfoList);
   }
 }

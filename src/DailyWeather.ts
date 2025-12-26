@@ -1,14 +1,9 @@
 import dayjs from 'dayjs';
 import environment from '../config/environment';
-import WeatherAPIManager, {
-  UltraShortWeather,
-  ShortTermWeather,
-} from './WeatherAPIManager';
+import WeatherAPIManager, { UltraShortWeather, ShortTermWeather } from './WeatherAPIManager';
 import AirKoreaManager, { AirQualityInfo } from './AirKoreaManager';
 import OpenAIManager from './OpenAIManager';
 import { calculateFeelsLikeTemp } from './utils/weatherUtils';
-// import { PREFIX_REDIS_KEY } from './constant';
-// import RedisManager from './RedisManager';
 
 /**
  * 통합 날씨 데이터 인터페이스
@@ -44,23 +39,9 @@ export class DailyWeather {
    * @returns {Promise<Array<string>>} 날씨 메시지 배열
    */
   async getDailyWeather(): Promise<Array<string>> {
-    // const cachedMessages = await this.getCachedMessages();
-    //
-    // // case: 캐시된 메시지가 있을 경우
-    // if (cachedMessages !== null) {
-    //   return cachedMessages;
-    // }
-
     try {
-      // info: 날씨 데이터 수집
       const weatherData = await this.collectWeatherData();
-
-      // info: 메시지 생성
-      const messages = this.getMessagesForTelegram(weatherData);
-
-      // await this.setCachedMessages(messages);
-
-      return messages;
+      return this.getMessagesForTelegram(weatherData);
     } catch (error) {
       console.error('날씨 정보 수집 실패:', error);
       throw error;
@@ -91,7 +72,7 @@ export class DailyWeather {
     const feelsLikeTemp = calculateFeelsLikeTemp(
       current.temperature,
       current.windSpeed,
-      current.humidity
+      current.humidity,
     );
 
     // info: OpenAI 옷차림 추천 (fallback 포함)
@@ -114,7 +95,7 @@ export class DailyWeather {
         feelsLikeTemp,
         forecast.minTemp,
         forecast.maxTemp,
-        airQuality.pm10Grade
+        airQuality.pm10Grade,
       );
     }
 
@@ -140,7 +121,7 @@ export class DailyWeather {
     feelsLikeTemp: number,
     minTemp: number,
     maxTemp: number,
-    pm10Grade: number
+    pm10Grade: number,
   ): string {
     let advice = '';
 
@@ -239,47 +220,4 @@ export class DailyWeather {
 
     return [message];
   }
-
-  /**
-   * 캐시된 메시지를 가져옵니다.
-   * @async
-   * @private
-   * @returns {Promise<Array<string> | null>}
-   */
-  // private async getCachedMessages(): Promise<Array<string> | null> {
-  //   // todo: 레디스 연결 복구하기 전까지 주석 처리
-  //   //   const today = dayjs().format('YYYY-MM-DD');
-  //   //   const messageKey = `${PREFIX_REDIS_KEY}:dailyWeather:${today}`;
-  //   //   const cachedData = await RedisManager.getInstance().get(messageKey);
-  //   //
-  //   //   if (cachedData) {
-  //   //     try {
-  //   //       return JSON.parse(cachedData);
-  //   //     } catch (error) {
-  //   //       console.error('캐시된 메시지 파싱 실패:', error);
-  //   //       return null;
-  //   //     }
-  //   //   }
-  //
-  //   return null;
-  // }
-
-  /**
-   * 메시지를 캐시합니다.
-   * @async
-   * @private
-   * @param {Array<string>} _messages - 캐시할 메시지 배열
-   * @returns {Promise<void>}
-   */
-  // private async setCachedMessages(_messages: Array<string>): Promise<void> {
-  //   // todo: 레디스 연결 복구하기 전까지 주석 처리
-  //   //   const today = dayjs().format('YYYY-MM-DD');
-  //   //   const messageKey = `${PREFIX_REDIS_KEY}:dailyWeather:${today}`;
-  //   //   // TTL: 1시간 (3600초)
-  //   //   await RedisManager.getInstance().set(
-  //   //     messageKey,
-  //   //     JSON.stringify(messages),
-  //   //     3600
-  //   //   );
-  // }
 }
