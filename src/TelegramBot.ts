@@ -2,6 +2,7 @@ import environment from '../config/environment';
 import { Telegraf } from 'telegraf';
 import { DailyNews } from './DailyNews';
 import { ExtraReplyMessage } from 'telegraf/typings/telegram-types';
+import { logger } from './infrastructure/logger';
 
 export class TelegramBot {
   private telegraf: Telegraf;
@@ -39,7 +40,7 @@ export class TelegramBot {
 
   async sendErrorMessage(error: unknown, path: string = __filename): Promise<void> {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`${path}: ${errorMessage}`);
+    logger.error('Bot error', error, { path });
     const text = `
 Bot Error!
 \`\`\`

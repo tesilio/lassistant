@@ -2,6 +2,7 @@ import { default as axios, AxiosResponse } from 'axios';
 import { CheerioAPI, load } from 'cheerio';
 import dayjs from 'dayjs';
 import OpenAIManager from './OpenAIManager';
+import { logger } from './infrastructure/logger';
 
 interface NewsInfo {
   title: string;
@@ -55,7 +56,7 @@ export class DailyNews {
 
       return contentElement.text().trim().replace(/\s+/g, ' ');
     } catch (error) {
-      console.error(`기사 내용 가져오기 실패: ${url}`, error);
+      logger.error('기사 내용 가져오기 실패', error, { url });
       return '';
     }
   }

@@ -4,6 +4,7 @@ import WeatherAPIManager, { UltraShortWeather, ShortTermWeather } from './Weathe
 import AirKoreaManager, { AirQualityInfo } from './AirKoreaManager';
 import OpenAIManager from './OpenAIManager';
 import { calculateFeelsLikeTemp } from './utils/weatherUtils';
+import { logger } from './infrastructure/logger';
 
 /**
  * 통합 날씨 데이터 인터페이스
@@ -43,7 +44,7 @@ export class DailyWeather {
       const weatherData = await this.collectWeatherData();
       return this.getMessagesForTelegram(weatherData);
     } catch (error) {
-      console.error('날씨 정보 수집 실패:', error);
+      logger.error('날씨 정보 수집 실패', error);
       throw error;
     }
   }
@@ -90,7 +91,7 @@ export class DailyWeather {
         pm10Grade: airQuality.pm10Grade,
       });
     } catch (error) {
-      console.error('OpenAI 옷차림 추천 실패, fallback 사용:', error);
+      logger.error('OpenAI 옷차림 추천 실패, fallback 사용', error);
       clothingAdvice = this.generateFallbackClothingAdvice(
         feelsLikeTemp,
         forecast.minTemp,

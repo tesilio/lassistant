@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import environment from '../config/environment';
+import { logger } from './infrastructure/logger';
 
 /**
  * OpenAI API 관리자 클래스
@@ -94,7 +95,7 @@ ${currentDate}
 
       return response.choices[0].message.content?.trim() || '요약 실패';
     } catch (error) {
-      console.error('OpenAI API 요약 실패:', error);
+      logger.error('OpenAI API 요약 실패', error);
       throw error;
     }
   }
@@ -177,7 +178,7 @@ ${currentDate}
 
       return response.choices[0].message.content?.trim() || '';
     } catch (error) {
-      console.error('OpenAI API 옷차림 추천 실패:', error);
+      logger.error('OpenAI API 옷차림 추천 실패', error);
       throw error;
     }
   }
