@@ -1,8 +1,9 @@
-import { default as axios, AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import { CheerioAPI, load } from 'cheerio';
 import dayjs from 'dayjs';
 import OpenAIManager from './OpenAIManager';
 import { logger } from './infrastructure/logger';
+import { httpClient } from './infrastructure/httpClient';
 
 interface NewsInfo {
   title: string;
@@ -22,10 +23,8 @@ export class DailyNews {
   }
 
   private async getHtml(url: URL | string): Promise<AxiosResponse<string>> {
-    return axios({
-      url: typeof url === 'string' ? url : url.href,
-      method: 'get',
-    });
+    const targetUrl = typeof url === 'string' ? url : url.href;
+    return httpClient.get<string>(targetUrl);
   }
 
   private getNewsInfoList(cheerioAPI: CheerioAPI): NewsInfo[] {
