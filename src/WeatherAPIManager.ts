@@ -1,93 +1,22 @@
-import { default as axios, AxiosResponse } from 'axios';
 import dayjs from 'dayjs';
 import environment from '../config/environment';
 import { getSkyConditionText, getPrecipitationTypeText } from './utils/weatherUtils';
+import { BaseAPIManager } from './services/base/BaseAPIManager';
+import { UltraShortWeather, ShortTermWeather, KMAResponse, KMAResponseItem } from './types/weather';
 
-/**
- * 초단기실황 날씨 정보 인터페이스
- */
-export interface UltraShortWeather {
-  temperature: number; // 기온 (°C)
-  humidity: number; // 습도 (%)
-  windSpeed: number; // 풍속 (m/s)
-  precipitation: number; // 1시간 강수량 (mm)
-  precipitationType: string; // 강수 형태
-  skyCondition: string; // 하늘상태
-}
+export { UltraShortWeather, ShortTermWeather };
 
-/**
- * 단기예보 날씨 정보 인터페이스
- */
-export interface ShortTermWeather {
-  minTemp: number; // 최저기온
-  maxTemp: number; // 최고기온
-  morningPrecipProb: number; // 오전 강수확률 (%)
-  afternoonPrecipProb: number; // 오후 강수확률 (%)
-  eveningPrecipProb: number; // 저녁 강수확률 (%)
-  morningCondition: string; // 오전 하늘상태
-  afternoonCondition: string; // 오후 하늘상태
-  eveningCondition: string; // 저녁 하늘상태
-  morningPrecipType: string; // 오전 강수형태
-  afternoonPrecipType: string; // 오후 강수형태
-  eveningPrecipType: string; // 저녁 강수형태
-}
-
-/**
- * 기상청 API 응답 아이템 인터페이스
- */
-interface KMAResponseItem {
-  category: string;
-  fcstDate?: string;
-  fcstTime?: string;
-  fcstValue?: string;
-  baseDate: string;
-  baseTime: string;
-  nx: number;
-  ny: number;
-  obsrValue?: string;
-}
-
-/**
- * 기상청 API 응답 인터페이스
- */
-interface KMAResponse {
-  response: {
-    header: {
-      resultCode: string;
-      resultMsg: string;
-    };
-    body: {
-      dataType: string;
-      items: {
-        item: KMAResponseItem[];
-      };
-      pageNo: number;
-      numOfRows: number;
-      totalCount: number;
-    };
-  };
-}
-
-/**
- * 기상청 API 관리자 클래스 (싱글톤)
- */
-export default class WeatherAPIManager {
+export default class WeatherAPIManager extends BaseAPIManager {
   private static instance: WeatherAPIManager;
   private readonly baseUrl = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
   private readonly apiKey: string;
+  protected readonly serviceName = '기상청';
 
-  /**
-   * 생성자
-   * @private
-   */
   private constructor() {
+    super();
     this.apiKey = environment.weather.dataGoApiKey;
   }
 
-  /**
-   * 싱글톤 인스턴스 반환
-   * @returns {WeatherAPIManager}
-   */
   public static getInstance(): WeatherAPIManager {
     if (!WeatherAPIManager.instance) {
       WeatherAPIManager.instance = new WeatherAPIManager();
@@ -95,25 +24,13 @@ export default class WeatherAPIManager {
     return WeatherAPIManager.instance;
   }
 
-  /**
-   * 싱글톤 인스턴스 리셋 (테스트 전용)
-   * @internal
-   */
   public static resetInstance(): void {
     WeatherAPIManager.instance = undefined as unknown as WeatherAPIManager;
   }
 
-  /**
-   * 초단기실황 조회 (현재 날씨)
-   * @async
-   * @param {number} nx - 격자 X 좌표
-   * @param {number} ny - 격자 Y 좌표
-   * @returns {Promise<UltraShortWeather>} 초단기실황 날씨 정보
-   */
   public async getUltraShortTermForecast(nx: number, ny: number): Promise<UltraShortWeather> {
     const now = dayjs();
     const baseDate = now.format('YYYYMMDD');
-    // info: 초단기실황은 매시간 30분에 생성되므로, 현재 시각 기준 이전 정시 사용
     const baseTime = now.subtract(1, 'hour').format('HH00');
 
     const params = {
@@ -127,13 +44,12 @@ export default class WeatherAPIManager {
       ny,
     };
 
-    const response = await this.retryRequest<AxiosResponse<KMAResponse>>(async () => {
-      return axios.get(`${this.baseUrl}/getUltraSrtNcst`, { params });
+    const response = await this.retryRequest<KMAResponse>(async () => {
+      return this.http.get(`${this.baseUrl}/getUltraSrtNcst`, { params });
     }, 3);
 
     const items = response.data.response.body.items.item;
 
-    // info: 응답 데이터에서 필요한 값 추출
     const result: UltraShortWeather = {
       temperature: 0,
       humidity: 0,
@@ -143,21 +59,21 @@ export default class WeatherAPIManager {
       skyCondition: '알 수 없음',
     };
 
-    items.forEach((item) => {
+    items.forEach((item: KMAResponseItem) => {
       switch (item.category) {
-        case 'T1H': // 기온
+        case 'T1H':
           result.temperature = parseFloat(item.obsrValue || '0');
           break;
-        case 'REH': // 습도
+        case 'REH':
           result.humidity = parseInt(item.obsrValue || '0', 10);
           break;
-        case 'WSD': // 풍속
+        case 'WSD':
           result.windSpeed = parseFloat(item.obsrValue || '0');
           break;
-        case 'RN1': // 1시간 강수량
+        case 'RN1':
           result.precipitation = parseFloat(item.obsrValue || '0');
           break;
-        case 'PTY': // 강수형태
+        case 'PTY':
           result.precipitationType = getPrecipitationTypeText(item.obsrValue || '0');
           break;
       }
@@ -166,17 +82,8 @@ export default class WeatherAPIManager {
     return result;
   }
 
-  /**
-   * 단기예보 조회 (오늘/내일 예보)
-   * @async
-   * @param {number} nx - 격자 X 좌표
-   * @param {number} ny - 격자 Y 좌표
-   * @returns {Promise<ShortTermWeather>} 단기예보 날씨 정보
-   */
   public async getShortTermForecast(nx: number, ny: number): Promise<ShortTermWeather> {
     const now = dayjs();
-    // info: 단기예보는 02, 05, 08, 11, 14, 17, 20, 23시에 생성
-    // 현재 시각 기준 가장 최근 발표 시각 계산
     const currentHour = now.hour();
     let baseTime: string;
     let baseDate = now.format('YYYYMMDD');
@@ -213,15 +120,13 @@ export default class WeatherAPIManager {
       ny,
     };
 
-    const response = await this.retryRequest<AxiosResponse<KMAResponse>>(async () => {
-      return axios.get(`${this.baseUrl}/getVilageFcst`, { params });
+    const response = await this.retryRequest<KMAResponse>(async () => {
+      return this.http.get(`${this.baseUrl}/getVilageFcst`, { params });
     }, 3);
 
     const items = response.data.response.body.items.item;
     const today = now.format('YYYYMMDD');
-
-    // info: 오늘 날짜의 예보만 필터링
-    const todayItems = items.filter((item) => item.fcstDate === today);
+    const todayItems = items.filter((item: KMAResponseItem) => item.fcstDate === today);
 
     const result: ShortTermWeather = {
       minTemp: 0,
@@ -237,9 +142,8 @@ export default class WeatherAPIManager {
       eveningPrecipType: '없음',
     };
 
-    // info: TMN/TMX는 오늘 또는 내일 날짜에서 찾기
-    const tmnItem = items.find((item) => item.category === 'TMN');
-    const tmxItem = items.find((item) => item.category === 'TMX');
+    const tmnItem = items.find((item: KMAResponseItem) => item.category === 'TMN');
+    const tmxItem = items.find((item: KMAResponseItem) => item.category === 'TMX');
 
     if (tmnItem) {
       result.minTemp = parseFloat(tmnItem.fcstValue || '0');
@@ -248,65 +152,49 @@ export default class WeatherAPIManager {
       result.maxTemp = parseFloat(tmxItem.fcstValue || '0');
     }
 
-    // info: 하늘 상태와 강수 정보는 오늘 데이터에서 시간대별로 수집
     const morningTimes = ['0600', '0700', '0800', '0900', '1000', '1100'];
     const afternoonTimes = ['1200', '1300', '1400', '1500', '1600', '1700'];
     const eveningTimes = ['1800', '1900', '2000', '2100', '2200', '2300'];
 
-    todayItems.forEach((item) => {
+    todayItems.forEach((item: KMAResponseItem) => {
       const fcstTime = item.fcstTime || '';
       const fcstValue = item.fcstValue || '';
 
       switch (item.category) {
-        case 'POP': // 강수확률
-          // case: 오전 (06-12시)
+        case 'POP':
           if (morningTimes.includes(fcstTime)) {
             result.morningPrecipProb = Math.max(result.morningPrecipProb, parseInt(fcstValue, 10));
-          }
-          // case: 오후 (12-18시)
-          else if (afternoonTimes.includes(fcstTime)) {
+          } else if (afternoonTimes.includes(fcstTime)) {
             result.afternoonPrecipProb = Math.max(
               result.afternoonPrecipProb,
               parseInt(fcstValue, 10),
             );
-          }
-          // case: 저녁 (18-24시)
-          else if (eveningTimes.includes(fcstTime)) {
+          } else if (eveningTimes.includes(fcstTime)) {
             result.eveningPrecipProb = Math.max(result.eveningPrecipProb, parseInt(fcstValue, 10));
           }
           break;
-        case 'SKY': // 하늘상태
+        case 'SKY':
           const skyText = getSkyConditionText(fcstValue);
-          // case: 오전 시간대 중 아직 데이터가 없으면 업데이트
           if (morningTimes.includes(fcstTime) && result.morningCondition === '알 수 없음') {
             result.morningCondition = skyText;
-          }
-          // case: 오후 시간대 중 아직 데이터가 없으면 업데이트
-          else if (
+          } else if (
             afternoonTimes.includes(fcstTime) &&
             result.afternoonCondition === '알 수 없음'
           ) {
             result.afternoonCondition = skyText;
-          }
-          // case: 저녁 시간대 중 아직 데이터가 없으면 업데이트
-          else if (eveningTimes.includes(fcstTime) && result.eveningCondition === '알 수 없음') {
+          } else if (eveningTimes.includes(fcstTime) && result.eveningCondition === '알 수 없음') {
             result.eveningCondition = skyText;
           }
           break;
-        case 'PTY': // 강수형태
+        case 'PTY':
           const precipText = getPrecipitationTypeText(fcstValue);
-          if (fcstValue === '0') break; // case: 강수 없으면 스킵
+          if (fcstValue === '0') break;
 
-          // case: 오전 시간대
           if (morningTimes.includes(fcstTime)) {
             result.morningPrecipType = precipText;
-          }
-          // case: 오후 시간대
-          else if (afternoonTimes.includes(fcstTime)) {
+          } else if (afternoonTimes.includes(fcstTime)) {
             result.afternoonPrecipType = precipText;
-          }
-          // case: 저녁 시간대
-          else if (eveningTimes.includes(fcstTime)) {
+          } else if (eveningTimes.includes(fcstTime)) {
             result.eveningPrecipType = precipText;
           }
           break;
@@ -314,35 +202,5 @@ export default class WeatherAPIManager {
     });
 
     return result;
-  }
-
-  /**
-   * API 재시도 로직 (최대 3회, 지수 백오프)
-   * @async
-   * @private
-   * @template T
-   * @param {() => Promise<T>} fn - 재시도할 함수
-   * @param {number} maxRetries - 최대 재시도 횟수
-   * @returns {Promise<T>}
-   */
-  private async retryRequest<T>(fn: () => Promise<T>, maxRetries: number = 3): Promise<T> {
-    let lastError: Error | undefined;
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        return await fn();
-      } catch (error) {
-        lastError = error as Error;
-        console.error(`API 호출 실패 (시도 ${attempt + 1}/${maxRetries}):`, error);
-
-        // case: 마지막 시도가 아니면 대기 후 재시도
-        if (attempt < maxRetries - 1) {
-          const delay = Math.pow(2, attempt) * 1000; // 지수 백오프: 1초, 2초, 4초
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-      }
-    }
-
-    throw lastError;
   }
 }

@@ -68,7 +68,7 @@ describe('TelegramBot', () => {
       expect.stringContaining(`
 Bot Error!
 \`\`\`
-Error: Mocked error
+Mocked error
 \`\`\`
 `),
       expect.objectContaining({

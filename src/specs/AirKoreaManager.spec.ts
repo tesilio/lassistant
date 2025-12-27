@@ -1,13 +1,17 @@
-jest.mock('axios');
+jest.mock('../infrastructure/httpClient', () => ({
+  httpClient: {
+    get: jest.fn(),
+  },
+}));
 
-import axios from 'axios';
+import { httpClient } from '../infrastructure/httpClient';
 import AirKoreaManager from '../AirKoreaManager';
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
 describe('AirKoreaManager', () => {
   beforeEach(() => {
-    mockedAxios.get.mockReset();
+    (mockedHttpClient.get as jest.Mock).mockReset();
     AirKoreaManager.resetInstance();
   });
 
@@ -35,7 +39,7 @@ describe('AirKoreaManager', () => {
         { stationName: '서초구', addr: '서울특별시 서초구' },
       ];
 
-      mockedAxios.get.mockResolvedValueOnce({
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce({
         data: {
           response: {
             header: { resultCode: '00', resultMsg: 'NORMAL_CODE' },
@@ -53,8 +57,8 @@ describe('AirKoreaManager', () => {
       const result = await manager.getStationList('강남');
 
       expect(result).toEqual(mockStations);
-      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
-      expect(mockedAxios.get).toHaveBeenCalledWith(
+      expect(mockedHttpClient.get).toHaveBeenCalledTimes(1);
+      expect(mockedHttpClient.get).toHaveBeenCalledWith(
         expect.stringContaining('getMsrstnList'),
         expect.objectContaining({
           params: expect.objectContaining({
@@ -66,7 +70,7 @@ describe('AirKoreaManager', () => {
     });
 
     it('결과가 없을 때 빈 배열을 반환해야 한다', async () => {
-      mockedAxios.get.mockResolvedValueOnce({
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce({
         data: {
           response: {
             header: { resultCode: '00', resultMsg: 'NORMAL_CODE' },
@@ -118,7 +122,7 @@ describe('AirKoreaManager', () => {
     };
 
     it('대기질 정보를 반환해야 한다', async () => {
-      mockedAxios.get.mockResolvedValueOnce(mockAirQualityResponse);
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(mockAirQualityResponse);
 
       const manager = AirKoreaManager.getInstance();
       const result = await manager.getAirQuality('강남구');
@@ -140,7 +144,7 @@ describe('AirKoreaManager', () => {
     });
 
     it('데이터가 없을 때 에러를 던져야 한다', async () => {
-      mockedAxios.get.mockResolvedValueOnce({
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce({
         data: {
           response: {
             header: { resultCode: '00', resultMsg: 'NORMAL_CODE' },
@@ -162,7 +166,7 @@ describe('AirKoreaManager', () => {
     });
 
     it('등급이 유효하지 않을 때 기본값 1을 사용해야 한다', async () => {
-      mockedAxios.get.mockResolvedValueOnce({
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce({
         data: {
           response: {
             header: { resultCode: '00', resultMsg: 'NORMAL_CODE' },
@@ -199,7 +203,7 @@ describe('AirKoreaManager', () => {
     });
 
     it('값이 없을 때 0으로 처리해야 한다', async () => {
-      mockedAxios.get.mockResolvedValueOnce({
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce({
         data: {
           response: {
             header: { resultCode: '00', resultMsg: 'NORMAL_CODE' },
@@ -242,8 +246,8 @@ describe('AirKoreaManager', () => {
 
       for (const testCase of gradeTestCases) {
         AirKoreaManager.resetInstance();
-        mockedAxios.get.mockReset();
-        mockedAxios.get.mockResolvedValueOnce({
+        (mockedHttpClient.get as jest.Mock).mockReset();
+        (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce({
           data: {
             response: {
               header: { resultCode: '00', resultMsg: 'NORMAL_CODE' },
@@ -279,7 +283,7 @@ describe('AirKoreaManager', () => {
 
   describe('retryRequest (via getAirQuality)', () => {
     it('첫 번째 시도에서 성공하면 바로 결과를 반환해야 한다', async () => {
-      mockedAxios.get.mockResolvedValueOnce({
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce({
         data: {
           response: {
             header: { resultCode: '00', resultMsg: 'NORMAL_CODE' },
@@ -303,7 +307,7 @@ describe('AirKoreaManager', () => {
       const manager = AirKoreaManager.getInstance();
       await manager.getAirQuality('강남구');
 
-      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+      expect(mockedHttpClient.get).toHaveBeenCalledTimes(1);
     });
   });
 });

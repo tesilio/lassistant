@@ -1,12 +1,15 @@
-// info: 싱글톤 + 모듈 캐싱 문제를 해결하기 위해 axios 자체를 완전 모킹합니다.
-// axios-mock-adapter는 동일 인스턴스를 공유해야 하지만, jest.resetModules()가 이를 방해합니다.
-jest.mock('axios');
+// info: httpClient 모듈을 모킹하여 BaseAPIManager의 this.http를 제어합니다.
+jest.mock('../infrastructure/httpClient', () => ({
+  httpClient: {
+    get: jest.fn(),
+  },
+}));
 
-import axios from 'axios';
+import { httpClient } from '../infrastructure/httpClient';
 import dayjs from 'dayjs';
 import WeatherAPIManager from '../WeatherAPIManager';
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
 describe('WeatherAPIManager', () => {
   const originalEnv = process.env;
@@ -26,7 +29,7 @@ describe('WeatherAPIManager', () => {
   });
 
   beforeEach(() => {
-    mockedAxios.get.mockReset();
+    (mockedHttpClient.get as jest.Mock).mockReset();
     WeatherAPIManager.resetInstance();
   });
 
@@ -98,7 +101,7 @@ describe('WeatherAPIManager', () => {
     };
 
     it('초단기실황 데이터를 올바르게 파싱해야 합니다', async () => {
-      mockedAxios.get.mockResolvedValueOnce(mockUltraShortResponse);
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(mockUltraShortResponse);
       const weatherManager = WeatherAPIManager.getInstance();
 
       const result = await weatherManager.getUltraShortTermForecast(61, 126);
@@ -169,7 +172,7 @@ describe('WeatherAPIManager', () => {
         },
       };
 
-      mockedAxios.get.mockResolvedValueOnce(rainyResponse);
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(rainyResponse);
       const weatherManager = WeatherAPIManager.getInstance();
 
       const result = await weatherManager.getUltraShortTermForecast(61, 126);
@@ -281,7 +284,7 @@ describe('WeatherAPIManager', () => {
         },
       ];
 
-      mockedAxios.get.mockResolvedValueOnce(createShortTermResponse(items));
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(createShortTermResponse(items));
       const weatherManager = WeatherAPIManager.getInstance();
 
       const result = await weatherManager.getShortTermForecast(61, 126);
@@ -330,7 +333,7 @@ describe('WeatherAPIManager', () => {
         },
       ];
 
-      mockedAxios.get.mockResolvedValueOnce(createShortTermResponse(items));
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(createShortTermResponse(items));
       const weatherManager = WeatherAPIManager.getInstance();
 
       const result = await weatherManager.getShortTermForecast(61, 126);
@@ -372,7 +375,7 @@ describe('WeatherAPIManager', () => {
         },
       ];
 
-      mockedAxios.get.mockResolvedValueOnce(createShortTermResponse(items));
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(createShortTermResponse(items));
       const weatherManager = WeatherAPIManager.getInstance();
 
       const result = await weatherManager.getShortTermForecast(61, 126);
@@ -381,7 +384,7 @@ describe('WeatherAPIManager', () => {
     });
 
     it('데이터가 없을 때 기본값을 반환해야 합니다', async () => {
-      mockedAxios.get.mockResolvedValueOnce(createShortTermResponse([]));
+      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(createShortTermResponse([]));
       const weatherManager = WeatherAPIManager.getInstance();
 
       const result = await weatherManager.getShortTermForecast(61, 126);
@@ -412,7 +415,7 @@ describe.skip('WeatherAPIManager - 재시도 로직', () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
-    mockedAxios.get.mockReset();
+    (httpClient.get as jest.Mock).mockReset();
     WeatherAPIManager.resetInstance();
   });
 
@@ -480,7 +483,9 @@ describe.skip('WeatherAPIManager - 재시도 로직', () => {
   };
 
   it('3회 재시도 후에도 실패하면 에러를 throw해야 합니다', async () => {
-    mockedAxios.get.mockImplementation(() => Promise.reject(new Error('Server Error')));
+    (httpClient.get as jest.Mock).mockImplementation(() =>
+      Promise.reject(new Error('Server Error')),
+    );
 
     const weatherManager = WeatherAPIManager.getInstance();
     const promise = weatherManager.getUltraShortTermForecast(61, 126);
@@ -495,7 +500,7 @@ describe.skip('WeatherAPIManager - 재시도 로직', () => {
   it('API 호출 실패 시 재시도해야 합니다', async () => {
     let callCount = 0;
 
-    mockedAxios.get.mockImplementation(() => {
+    (httpClient.get as jest.Mock).mockImplementation(() => {
       callCount++;
       if (callCount < 3) {
         return Promise.reject(new Error('Server Error'));

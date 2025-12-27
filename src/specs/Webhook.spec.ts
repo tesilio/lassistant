@@ -118,11 +118,11 @@ describe('Webhook', () => {
       expect(mockCtx.reply).toHaveBeenCalledTimes(2);
       expect(mockCtx.reply).toHaveBeenNthCalledWith(1, '뉴스 1', {
         parse_mode: 'Markdown',
-        disable_web_page_preview: true,
+        link_preview_options: { is_disabled: true },
       });
       expect(mockCtx.reply).toHaveBeenNthCalledWith(2, '뉴스 2', {
         parse_mode: 'Markdown',
-        disable_web_page_preview: true,
+        link_preview_options: { is_disabled: true },
       });
     });
 
