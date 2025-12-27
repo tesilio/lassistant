@@ -396,7 +396,7 @@ describe('WeatherAPIManager', () => {
   });
 });
 
-describe.skip('WeatherAPIManager - 재시도 로직', () => {
+describe('WeatherAPIManager - 재시도 로직', () => {
   const originalEnv = process.env;
 
   beforeAll(() => {
@@ -414,14 +414,8 @@ describe.skip('WeatherAPIManager - 재시도 로직', () => {
   });
 
   beforeEach(() => {
-    jest.useFakeTimers();
     (httpClient.get as jest.Mock).mockReset();
     WeatherAPIManager.resetInstance();
-  });
-
-  afterEach(() => {
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
   });
 
   const mockUltraShortResponse = {
@@ -482,41 +476,41 @@ describe.skip('WeatherAPIManager - 재시도 로직', () => {
     },
   };
 
-  it('3회 재시도 후에도 실패하면 에러를 throw해야 합니다', async () => {
-    (httpClient.get as jest.Mock).mockImplementation(() =>
-      Promise.reject(new Error('Server Error')),
-    );
+  it(
+    '3회 재시도 후에도 실패하면 에러를 throw해야 합니다',
+    async () => {
+      (httpClient.get as jest.Mock).mockRejectedValue(new Error('Server Error'));
 
-    const weatherManager = WeatherAPIManager.getInstance();
-    const promise = weatherManager.getUltraShortTermForecast(61, 126);
+      const weatherManager = WeatherAPIManager.getInstance();
 
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
-    await jest.advanceTimersByTimeAsync(4000);
+      await expect(weatherManager.getUltraShortTermForecast(61, 126)).rejects.toThrow(
+        'Server Error',
+      );
+      expect(httpClient.get).toHaveBeenCalledTimes(3);
+    },
+    10000,
+  );
 
-    await expect(promise).rejects.toThrow('Server Error');
-  });
+  it(
+    'API 호출 실패 시 재시도해야 합니다',
+    async () => {
+      let callCount = 0;
 
-  it('API 호출 실패 시 재시도해야 합니다', async () => {
-    let callCount = 0;
+      (httpClient.get as jest.Mock).mockImplementation(() => {
+        callCount++;
+        // case: 3번째 호출에서 성공
+        if (callCount < 3) {
+          return Promise.reject(new Error('Server Error'));
+        }
+        return Promise.resolve(mockUltraShortResponse);
+      });
 
-    (httpClient.get as jest.Mock).mockImplementation(() => {
-      callCount++;
-      if (callCount < 3) {
-        return Promise.reject(new Error('Server Error'));
-      }
-      return Promise.resolve(mockUltraShortResponse);
-    });
+      const weatherManager = WeatherAPIManager.getInstance();
+      const result = await weatherManager.getUltraShortTermForecast(61, 126);
 
-    const weatherManager = WeatherAPIManager.getInstance();
-    const promise = weatherManager.getUltraShortTermForecast(61, 126);
-
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
-
-    const result = await promise;
-
-    expect(callCount).toBe(3);
-    expect(result.temperature).toBe(15.5);
-  });
+      expect(callCount).toBe(3);
+      expect(result.temperature).toBe(15.5);
+    },
+    10000,
+  );
 });
