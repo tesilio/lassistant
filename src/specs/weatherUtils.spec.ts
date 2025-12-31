@@ -27,7 +27,7 @@ describe('weatherUtils', () => {
       });
     });
 
-    describe('Heat Index (기온 27도 이상)', () => {
+    describe('Heat Index (기온 26도 이상)', () => {
       it('기온 35도, 습도 80%일 때 체감온도가 높아져야 합니다', () => {
         const result = calculateFeelsLikeTemp(35, 1, 80);
         expect(result).toBeGreaterThan(35);
@@ -35,24 +35,51 @@ describe('weatherUtils', () => {
 
       it('기온 30도, 습도 30%일 때 체감온도가 실제 기온과 비슷해야 합니다', () => {
         const result = calculateFeelsLikeTemp(30, 1, 30);
-        expect(result).toBeGreaterThanOrEqual(27);
+        expect(result).toBeGreaterThanOrEqual(26);
       });
 
       it('기온 27도, 습도 90%일 때 체감온도가 높아져야 합니다', () => {
         const result = calculateFeelsLikeTemp(27, 1, 90);
         expect(result).toBeGreaterThan(27);
       });
+
+      it('기온 26도, 습도 85%일 때 체감온도가 높아져야 합니다 (임계값 하향)', () => {
+        const result = calculateFeelsLikeTemp(26, 1, 85);
+        expect(result).toBeGreaterThan(26);
+      });
     });
 
-    describe('일반적인 경우 (10도 초과 ~ 27도 미만)', () => {
-      it('기온 20도일 때 기온을 그대로 반환해야 합니다', () => {
-        const result = calculateFeelsLikeTemp(20, 5, 50);
+    describe('중간 온도 범위 (11~25도) 습도/바람 보정', () => {
+      it('기온 20도, 습도 50%, 풍속 2m/s일 때 보정 없이 기온 반환', () => {
+        const result = calculateFeelsLikeTemp(20, 2, 50);
         expect(result).toBe(20);
       });
 
-      it('기온 15도일 때 기온을 그대로 반환해야 합니다', () => {
-        const result = calculateFeelsLikeTemp(15, 3, 60);
-        expect(result).toBe(15);
+      it('기온 20도, 습도 80%일 때 체감온도가 상승해야 합니다', () => {
+        const result = calculateFeelsLikeTemp(20, 1, 80);
+        expect(result).toBeGreaterThan(20);
+        expect(result).toBeCloseTo(21, 0);
+      });
+
+      it('기온 20도, 풍속 5m/s(18km/h)일 때 체감온도가 하락해야 합니다', () => {
+        const result = calculateFeelsLikeTemp(20, 5, 50);
+        expect(result).toBeLessThan(20);
+      });
+
+      it('기온 15도, 습도 90%, 풍속 1m/s일 때 습도 보정으로 체감온도 상승', () => {
+        const result = calculateFeelsLikeTemp(15, 1, 90);
+        expect(result).toBeGreaterThan(15);
+        expect(result).toBeCloseTo(17, 0);
+      });
+
+      it('기온 22도, 습도 50%, 풍속 10m/s(36km/h)일 때 바람 보정으로 체감온도 하락', () => {
+        const result = calculateFeelsLikeTemp(22, 10, 50);
+        expect(result).toBeLessThan(22);
+      });
+
+      it('습도와 바람 보정이 동시에 적용되어야 합니다', () => {
+        const result = calculateFeelsLikeTemp(18, 4, 80);
+        expect(result).not.toBe(18);
       });
     });
 
@@ -62,14 +89,19 @@ describe('weatherUtils', () => {
         expect(result).toBe(10);
       });
 
-      it('기온 11도일 때 기온을 그대로 반환해야 합니다', () => {
-        const result = calculateFeelsLikeTemp(11, 10, 50);
+      it('기온 11도, 습도 50%, 풍속 2m/s일 때 보정 없이 기온 반환', () => {
+        const result = calculateFeelsLikeTemp(11, 2, 50);
         expect(result).toBe(11);
       });
 
-      it('기온 26도일 때 기온을 그대로 반환해야 합니다', () => {
+      it('기온 25도, 습도 50%, 풍속 2m/s일 때 보정 없이 기온 반환', () => {
+        const result = calculateFeelsLikeTemp(25, 2, 50);
+        expect(result).toBe(25);
+      });
+
+      it('기온 26도일 때 Heat Index가 적용되어야 합니다', () => {
         const result = calculateFeelsLikeTemp(26, 1, 80);
-        expect(result).toBe(26);
+        expect(result).toBeGreaterThan(26);
       });
     });
   });

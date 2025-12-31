@@ -84,49 +84,15 @@ export default class WeatherAPIManager extends BaseAPIManager {
 
   public async getShortTermForecast(nx: number, ny: number): Promise<ShortTermWeather> {
     const now = dayjs();
-    const currentHour = now.hour();
-    let baseTime: string;
-    let baseDate = now.format('YYYYMMDD');
-
-    if (currentHour < 2) {
-      baseTime = '2300';
-      baseDate = now.subtract(1, 'day').format('YYYYMMDD');
-    } else if (currentHour < 5) {
-      baseTime = '0200';
-    } else if (currentHour < 8) {
-      baseTime = '0500';
-    } else if (currentHour < 11) {
-      baseTime = '0800';
-    } else if (currentHour < 14) {
-      baseTime = '1100';
-    } else if (currentHour < 17) {
-      baseTime = '1400';
-    } else if (currentHour < 20) {
-      baseTime = '1700';
-    } else if (currentHour < 23) {
-      baseTime = '2000';
-    } else {
-      baseTime = '2300';
-    }
-
-    const params = {
-      serviceKey: this.apiKey,
-      pageNo: 1,
-      numOfRows: 300,
-      dataType: 'JSON',
-      base_date: baseDate,
-      base_time: baseTime,
-      nx,
-      ny,
-    };
-
-    const response = await this.retryRequest<KMAResponse>(async () => {
-      return this.http.get(`${this.baseUrl}/getVilageFcst`, { params });
-    }, 3);
-
-    const items = response.data.response.body.items.item;
     const today = now.format('YYYYMMDD');
-    const todayItems = items.filter((item: KMAResponseItem) => item.fcstDate === today);
+
+    // info: TMN/TMX와 시간별 예보를 병렬로 조회
+    const [tmnTmxItems, forecastItems] = await Promise.all([
+      this.fetchTmnTmxData(nx, ny, now),
+      this.fetchForecastData(nx, ny, now),
+    ]);
+
+    const todayItems = forecastItems.filter((item: KMAResponseItem) => item.fcstDate === today);
 
     const result: ShortTermWeather = {
       minTemp: 0,
@@ -142,8 +108,10 @@ export default class WeatherAPIManager extends BaseAPIManager {
       eveningPrecipType: '없음',
     };
 
-    const tmnItem = items.find((item: KMAResponseItem) => item.category === 'TMN');
-    const tmxItem = items.find((item: KMAResponseItem) => item.category === 'TMX');
+    // info: TMN/TMX는 오늘 날짜 기준으로 필터링
+    const todayTmnTmx = tmnTmxItems.filter((item: KMAResponseItem) => item.fcstDate === today);
+    const tmnItem = todayTmnTmx.find((item: KMAResponseItem) => item.category === 'TMN');
+    const tmxItem = todayTmnTmx.find((item: KMAResponseItem) => item.category === 'TMX');
 
     if (tmnItem) {
       result.minTemp = parseFloat(tmnItem.fcstValue || '0');
@@ -202,5 +170,97 @@ export default class WeatherAPIManager extends BaseAPIManager {
     });
 
     return result;
+  }
+
+  /**
+   * TMN/TMX 데이터 조회 (0200 발표 데이터 사용)
+   * @private
+   */
+  private async fetchTmnTmxData(
+    nx: number,
+    ny: number,
+    now: dayjs.Dayjs,
+  ): Promise<KMAResponseItem[]> {
+    let baseDate: string;
+    let baseTime: string;
+
+    // case: 새벽 2시 이전이면 전날 23시 발표 데이터 사용
+    if (now.hour() < 2) {
+      baseDate = now.subtract(1, 'day').format('YYYYMMDD');
+      baseTime = '2300';
+    } else {
+      baseDate = now.format('YYYYMMDD');
+      baseTime = '0200';
+    }
+
+    const params = {
+      serviceKey: this.apiKey,
+      pageNo: 1,
+      numOfRows: 300,
+      dataType: 'JSON',
+      base_date: baseDate,
+      base_time: baseTime,
+      nx,
+      ny,
+    };
+
+    const response = await this.retryRequest<KMAResponse>(async () => {
+      return this.http.get(`${this.baseUrl}/getVilageFcst`, { params });
+    }, 3);
+
+    return response.data.response.body.items.item;
+  }
+
+  /**
+   * 시간별 예보 데이터 조회
+   * @private
+   */
+  private async fetchForecastData(
+    nx: number,
+    ny: number,
+    now: dayjs.Dayjs,
+  ): Promise<KMAResponseItem[]> {
+    const currentHour = now.hour();
+    let baseTime: string;
+    let baseDate = now.format('YYYYMMDD');
+
+    // case: 현재 시간에 따라 가장 최신 발표 시간 선택
+    if (currentHour < 2) {
+      baseTime = '2300';
+      baseDate = now.subtract(1, 'day').format('YYYYMMDD');
+    } else if (currentHour < 5) {
+      baseTime = '0200';
+    } else if (currentHour < 8) {
+      baseTime = '0500';
+    } else if (currentHour < 11) {
+      baseTime = '0800';
+    } else if (currentHour < 14) {
+      baseTime = '1100';
+    } else if (currentHour < 17) {
+      baseTime = '1400';
+    } else if (currentHour < 20) {
+      baseTime = '1700';
+    } else if (currentHour < 23) {
+      baseTime = '2000';
+    } else {
+      baseTime = '2300';
+    }
+
+    const params = {
+      serviceKey: this.apiKey,
+      pageNo: 1,
+      numOfRows: 300,
+      dataType: 'JSON',
+      base_date: baseDate,
+      base_time: baseTime,
+      nx,
+      ny,
+    };
+
+    const response = await this.retryRequest<KMAResponse>(async () => {
+      return this.http.get(`${this.baseUrl}/getVilageFcst`, { params });
+    }, 3);
+
+    return response.data.response.body.items.item;
   }
 }

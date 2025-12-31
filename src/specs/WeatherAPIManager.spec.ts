@@ -200,28 +200,31 @@ describe('WeatherAPIManager', () => {
       },
     });
 
+    const tmnTmxItems = [
+      {
+        category: 'TMN',
+        fcstValue: '5',
+        fcstDate: today,
+        fcstTime: '0600',
+        baseDate: today,
+        baseTime: '0200',
+        nx: 61,
+        ny: 126,
+      },
+      {
+        category: 'TMX',
+        fcstValue: '15',
+        fcstDate: today,
+        fcstTime: '1500',
+        baseDate: today,
+        baseTime: '0200',
+        nx: 61,
+        ny: 126,
+      },
+    ];
+
     it('단기예보 데이터를 올바르게 파싱해야 합니다', async () => {
-      const items = [
-        {
-          category: 'TMN',
-          fcstValue: '5',
-          fcstDate: today,
-          fcstTime: '0600',
-          baseDate: today,
-          baseTime: '0500',
-          nx: 61,
-          ny: 126,
-        },
-        {
-          category: 'TMX',
-          fcstValue: '15',
-          fcstDate: today,
-          fcstTime: '1500',
-          baseDate: today,
-          baseTime: '0500',
-          nx: 61,
-          ny: 126,
-        },
+      const forecastItems = [
         {
           category: 'POP',
           fcstValue: '30',
@@ -284,9 +287,11 @@ describe('WeatherAPIManager', () => {
         },
       ];
 
-      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(createShortTermResponse(items));
-      const weatherManager = WeatherAPIManager.getInstance();
+      (mockedHttpClient.get as jest.Mock)
+        .mockResolvedValueOnce(createShortTermResponse(tmnTmxItems))
+        .mockResolvedValueOnce(createShortTermResponse(forecastItems));
 
+      const weatherManager = WeatherAPIManager.getInstance();
       const result = await weatherManager.getShortTermForecast(61, 126);
 
       expect(result.minTemp).toBe(5);
@@ -300,27 +305,7 @@ describe('WeatherAPIManager', () => {
     });
 
     it('강수 형태가 있을 때 올바르게 파싱해야 합니다', async () => {
-      const items = [
-        {
-          category: 'TMN',
-          fcstValue: '0',
-          fcstDate: today,
-          fcstTime: '0600',
-          baseDate: today,
-          baseTime: '0500',
-          nx: 61,
-          ny: 126,
-        },
-        {
-          category: 'TMX',
-          fcstValue: '5',
-          fcstDate: today,
-          fcstTime: '1500',
-          baseDate: today,
-          baseTime: '0500',
-          nx: 61,
-          ny: 126,
-        },
+      const forecastItems = [
         {
           category: 'PTY',
           fcstValue: '3',
@@ -333,16 +318,18 @@ describe('WeatherAPIManager', () => {
         },
       ];
 
-      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(createShortTermResponse(items));
-      const weatherManager = WeatherAPIManager.getInstance();
+      (mockedHttpClient.get as jest.Mock)
+        .mockResolvedValueOnce(createShortTermResponse(tmnTmxItems))
+        .mockResolvedValueOnce(createShortTermResponse(forecastItems));
 
+      const weatherManager = WeatherAPIManager.getInstance();
       const result = await weatherManager.getShortTermForecast(61, 126);
 
       expect(result.morningPrecipType).toBe('눈 ❄️');
     });
 
     it('시간대별 강수확률 중 최대값을 반환해야 합니다', async () => {
-      const items = [
+      const forecastItems = [
         {
           category: 'POP',
           fcstValue: '10',
@@ -375,23 +362,51 @@ describe('WeatherAPIManager', () => {
         },
       ];
 
-      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(createShortTermResponse(items));
-      const weatherManager = WeatherAPIManager.getInstance();
+      (mockedHttpClient.get as jest.Mock)
+        .mockResolvedValueOnce(createShortTermResponse(tmnTmxItems))
+        .mockResolvedValueOnce(createShortTermResponse(forecastItems));
 
+      const weatherManager = WeatherAPIManager.getInstance();
       const result = await weatherManager.getShortTermForecast(61, 126);
 
       expect(result.morningPrecipProb).toBe(50);
     });
 
     it('데이터가 없을 때 기본값을 반환해야 합니다', async () => {
-      (mockedHttpClient.get as jest.Mock).mockResolvedValueOnce(createShortTermResponse([]));
-      const weatherManager = WeatherAPIManager.getInstance();
+      (mockedHttpClient.get as jest.Mock)
+        .mockResolvedValueOnce(createShortTermResponse([]))
+        .mockResolvedValueOnce(createShortTermResponse([]));
 
+      const weatherManager = WeatherAPIManager.getInstance();
       const result = await weatherManager.getShortTermForecast(61, 126);
 
       expect(result.minTemp).toBe(0);
       expect(result.maxTemp).toBe(0);
       expect(result.morningCondition).toBe('알 수 없음');
+    });
+
+    it('TMN/TMX 전용 API 호출과 예보 API 호출이 병렬로 실행되어야 합니다', async () => {
+      const forecastItems = [
+        {
+          category: 'SKY',
+          fcstValue: '1',
+          fcstDate: today,
+          fcstTime: '0900',
+          baseDate: today,
+          baseTime: '0500',
+          nx: 61,
+          ny: 126,
+        },
+      ];
+
+      (mockedHttpClient.get as jest.Mock)
+        .mockResolvedValueOnce(createShortTermResponse(tmnTmxItems))
+        .mockResolvedValueOnce(createShortTermResponse(forecastItems));
+
+      const weatherManager = WeatherAPIManager.getInstance();
+      await weatherManager.getShortTermForecast(61, 126);
+
+      expect(mockedHttpClient.get).toHaveBeenCalledTimes(2);
     });
   });
 });
@@ -476,41 +491,31 @@ describe('WeatherAPIManager - 재시도 로직', () => {
     },
   };
 
-  it(
-    '3회 재시도 후에도 실패하면 에러를 throw해야 합니다',
-    async () => {
-      (httpClient.get as jest.Mock).mockRejectedValue(new Error('Server Error'));
+  it('3회 재시도 후에도 실패하면 에러를 throw해야 합니다', async () => {
+    (httpClient.get as jest.Mock).mockRejectedValue(new Error('Server Error'));
 
-      const weatherManager = WeatherAPIManager.getInstance();
+    const weatherManager = WeatherAPIManager.getInstance();
 
-      await expect(weatherManager.getUltraShortTermForecast(61, 126)).rejects.toThrow(
-        'Server Error',
-      );
-      expect(httpClient.get).toHaveBeenCalledTimes(3);
-    },
-    10000,
-  );
+    await expect(weatherManager.getUltraShortTermForecast(61, 126)).rejects.toThrow('Server Error');
+    expect(httpClient.get).toHaveBeenCalledTimes(3);
+  }, 10000);
 
-  it(
-    'API 호출 실패 시 재시도해야 합니다',
-    async () => {
-      let callCount = 0;
+  it('API 호출 실패 시 재시도해야 합니다', async () => {
+    let callCount = 0;
 
-      (httpClient.get as jest.Mock).mockImplementation(() => {
-        callCount++;
-        // case: 3번째 호출에서 성공
-        if (callCount < 3) {
-          return Promise.reject(new Error('Server Error'));
-        }
-        return Promise.resolve(mockUltraShortResponse);
-      });
+    (httpClient.get as jest.Mock).mockImplementation(() => {
+      callCount++;
+      // case: 3번째 호출에서 성공
+      if (callCount < 3) {
+        return Promise.reject(new Error('Server Error'));
+      }
+      return Promise.resolve(mockUltraShortResponse);
+    });
 
-      const weatherManager = WeatherAPIManager.getInstance();
-      const result = await weatherManager.getUltraShortTermForecast(61, 126);
+    const weatherManager = WeatherAPIManager.getInstance();
+    const result = await weatherManager.getUltraShortTermForecast(61, 126);
 
-      expect(callCount).toBe(3);
-      expect(result.temperature).toBe(15.5);
-    },
-    10000,
-  );
+    expect(callCount).toBe(3);
+    expect(result.temperature).toBe(15.5);
+  }, 10000);
 });

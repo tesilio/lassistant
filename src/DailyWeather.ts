@@ -84,6 +84,7 @@ export class DailyWeather {
         feelsLikeTemp,
         minTemp: forecast.minTemp,
         maxTemp: forecast.maxTemp,
+        humidity: current.humidity,
         morningPrecipProb: forecast.morningPrecipProb,
         afternoonPrecipProb: forecast.afternoonPrecipProb,
         eveningPrecipProb: forecast.eveningPrecipProb,

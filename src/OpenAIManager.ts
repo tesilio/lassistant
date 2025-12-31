@@ -108,6 +108,7 @@ ${currentDate}
    * @param {number} weatherData.feelsLikeTemp - 체감온도
    * @param {number} weatherData.minTemp - 최저기온
    * @param {number} weatherData.maxTemp - 최고기온
+   * @param {number} weatherData.humidity - 습도
    * @param {number} weatherData.morningPrecipProb - 오전 강수확률
    * @param {number} weatherData.afternoonPrecipProb - 오후 강수확률
    * @param {number} weatherData.eveningPrecipProb - 저녁 강수확률
@@ -120,6 +121,7 @@ ${currentDate}
     feelsLikeTemp: number;
     minTemp: number;
     maxTemp: number;
+    humidity?: number;
     morningPrecipProb: number;
     afternoonPrecipProb: number;
     eveningPrecipProb: number;
@@ -127,23 +129,39 @@ ${currentDate}
     pm10Grade: number;
   }): Promise<string> {
     try {
+      const currentDate = new Date().toISOString().split('T')[0];
+      const month = new Date().getMonth() + 1;
+      const season = this.getSeason(month);
+
       const systemPrompt = `당신은 날씨 정보를 바탕으로 실용적인 옷차림을 추천하는 전문가입니다.
 
-# 입력 정보
-- 현재 기온 및 체감온도
-- 오늘 최저/최고 기온
-- 강수 확률 및 날씨 상태
-- 미세먼지 등급
+# 현재 날짜
+${currentDate} (${season})
 
-# 추천 규칙
-1. **체감온도 기반**: 실제 기온보다 체감온도를 우선 고려
-2. **일교차 고려**: 최저-최고 기온 차이가 8도 이상이면 겉옷 추천
-3. **날씨 상태**: 비/눈 예보 시 우산/방수 옷 언급
-4. **대기질**: 미세먼지 나쁨 이상일 때 마스크 착용 권장
-5. **자연스러운 문장**: 2-4문장의 친근한 톤
+# 체감온도별 옷차림 기준
+- 4°C 이하: 패딩, 두꺼운 코트, 목도리, 장갑, 히트텍
+- 5~8°C: 울코트, 가죽자켓, 니트, 기모제품
+- 9~11°C: 트렌치코트, 야상, 재킷, 니트
+- 12~16°C: 자켓, 가디건, 맨투맨, 청바지
+- 17~19°C: 얇은 가디건, 긴팔 티셔츠, 면바지
+- 20~22°C: 긴팔 티셔츠, 블라우스, 슬랙스
+- 23~27°C: 반팔, 얇은 셔츠, 면바지, 린넨
+- 28°C 이상: 민소매, 반팔, 반바지, 원피스
+
+# 추가 고려사항
+1. **체감온도 우선**: 실제 기온보다 체감온도 기준으로 추천
+2. **일교차 8°C 이상**: 겉옷(가디건, 얇은 재킷) 필수 권장
+3. **강수확률 40% 이상**: 우산 또는 방수 겉옷 언급
+4. **미세먼지 나쁨 이상**: 마스크 착용 권장
+5. **습도 80% 이상**: 통기성 좋은 소재 권장, 눅눅함 주의
+6. **습도 30% 이하**: 보습 케어 언급 (겨울철)
+7. **맑은 날 + 기온 20°C 이상**: 자외선 차단 언급
 
 # 출력 형식
-추천 내용만 출력하고, 다른 설명은 포함하지 마세요.`;
+- 2~4문장의 친근하고 실용적인 톤
+- 구체적인 아이템명 포함 (예: "얇은 가디건", "면바지")
+- 특이사항(비, 미세먼지, 일교차)이 있으면 반드시 언급
+- 추천 내용만 출력하고, 다른 설명은 포함하지 마세요.`;
 
       const pm10GradeText =
         weatherData.pm10Grade === 1
@@ -154,13 +172,18 @@ ${currentDate}
               ? '나쁨'
               : '매우나쁨';
 
-      const userPrompt = `
-현재 기온: ${weatherData.currentTemp}°C
+      const tempDiff = weatherData.maxTemp - weatherData.minTemp;
+      const maxPrecipProb = Math.max(
+        weatherData.morningPrecipProb,
+        weatherData.afternoonPrecipProb,
+        weatherData.eveningPrecipProb,
+      );
+
+      const userPrompt = `현재 기온: ${weatherData.currentTemp}°C
 체감온도: ${weatherData.feelsLikeTemp}°C
-최저/최고: ${weatherData.minTemp}°C / ${weatherData.maxTemp}°C
-오전 강수확률: ${weatherData.morningPrecipProb}%
-오후 강수확률: ${weatherData.afternoonPrecipProb}%
-저녁 강수확률: ${weatherData.eveningPrecipProb}%
+최저/최고: ${weatherData.minTemp}°C / ${weatherData.maxTemp}°C (일교차 ${tempDiff}°C)
+습도: ${weatherData.humidity ?? '정보 없음'}%
+최대 강수확률: ${maxPrecipProb}% (오전 ${weatherData.morningPrecipProb}%, 오후 ${weatherData.afternoonPrecipProb}%, 저녁 ${weatherData.eveningPrecipProb}%)
 하늘: ${weatherData.skyCondition}
 미세먼지: ${pm10GradeText}
 
@@ -181,5 +204,12 @@ ${currentDate}
       logger.error('OpenAI API 옷차림 추천 실패', error);
       throw error;
     }
+  }
+
+  private getSeason(month: number): string {
+    if (month >= 3 && month <= 5) return '봄';
+    if (month >= 6 && month <= 8) return '여름';
+    if (month >= 9 && month <= 11) return '가을';
+    return '겨울';
   }
 }

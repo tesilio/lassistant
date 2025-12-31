@@ -132,6 +132,7 @@ describe('OpenAIManager', () => {
       feelsLikeTemp: 8,
       minTemp: 5,
       maxTemp: 15,
+      humidity: 60,
       morningPrecipProb: 10,
       afternoonPrecipProb: 20,
       eveningPrecipProb: 30,
@@ -234,6 +235,53 @@ describe('OpenAIManager', () => {
       expect(userMessage.content).toContain('5°C');
       expect(userMessage.content).toContain('15°C');
       expect(userMessage.content).toContain('맑음');
+    });
+
+    it('시스템 프롬프트에 현재 날짜와 계절이 포함되어야 한다', async () => {
+      mockCreate.mockResolvedValueOnce({
+        choices: [{ message: { content: '추천' } }],
+      });
+
+      const manager = OpenAIManager.getInstance();
+      await manager.generateClothingAdvice(mockWeatherData);
+
+      const callArgs = mockCreate.mock.calls[0][0];
+      const systemMessage = callArgs.messages.find((m: { role: string }) => m.role === 'system');
+
+      const today = new Date().toISOString().split('T')[0];
+      expect(systemMessage.content).toContain(today);
+      expect(systemMessage.content).toMatch(/(봄|여름|가을|겨울)/);
+    });
+
+    it('사용자 프롬프트에 습도와 일교차 정보가 포함되어야 한다', async () => {
+      mockCreate.mockResolvedValueOnce({
+        choices: [{ message: { content: '추천' } }],
+      });
+
+      const manager = OpenAIManager.getInstance();
+      await manager.generateClothingAdvice(mockWeatherData);
+
+      const callArgs = mockCreate.mock.calls[0][0];
+      const userMessage = callArgs.messages.find((m: { role: string }) => m.role === 'user');
+
+      expect(userMessage.content).toContain('60%');
+      expect(userMessage.content).toContain('일교차 10°C');
+    });
+
+    it('시스템 프롬프트에 체감온도별 옷차림 기준이 포함되어야 한다', async () => {
+      mockCreate.mockResolvedValueOnce({
+        choices: [{ message: { content: '추천' } }],
+      });
+
+      const manager = OpenAIManager.getInstance();
+      await manager.generateClothingAdvice(mockWeatherData);
+
+      const callArgs = mockCreate.mock.calls[0][0];
+      const systemMessage = callArgs.messages.find((m: { role: string }) => m.role === 'system');
+
+      expect(systemMessage.content).toContain('4°C 이하');
+      expect(systemMessage.content).toContain('패딩');
+      expect(systemMessage.content).toContain('28°C 이상');
     });
   });
 });

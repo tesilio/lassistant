@@ -8,7 +8,7 @@
 export const calculateFeelsLikeTemp = (
   temp: number,
   windSpeed: number,
-  humidity: number
+  humidity: number,
 ): number => {
   // info: 풍속을 km/h로 변환
   const windSpeedKmh = windSpeed * 3.6;
@@ -23,8 +23,9 @@ export const calculateFeelsLikeTemp = (
     return Math.round(windChill * 10) / 10;
   }
 
-  // case: 기온 27도 이상일 때 불쾌지수 (Heat Index)
-  if (temp >= 27) {
+  // case: 기온 26도 이상일 때 불쾌지수 (Heat Index)
+  // info: 기존 27도에서 26도로 하향하여 고습도 상황을 더 잘 반영
+  if (temp >= 26) {
     const T = temp;
     const RH = humidity;
     const heatIndex =
@@ -40,7 +41,24 @@ export const calculateFeelsLikeTemp = (
     return Math.round(heatIndex * 10) / 10;
   }
 
-  // case: 일반적인 경우
+  // case: 11~25도 범위에서 습도와 바람에 따른 보정
+  if (temp > 10 && temp < 26) {
+    let adjustment = 0;
+
+    // info: 습도 70% 초과 시 체감온도 상승 (최대 +3°C)
+    if (humidity > 70) {
+      adjustment += (humidity - 70) * 0.1;
+    }
+
+    // info: 풍속 10km/h 초과 시 체감온도 하락 (최대 -3°C)
+    if (windSpeedKmh > 10) {
+      adjustment -= Math.min((windSpeedKmh - 10) * 0.1, 3);
+    }
+
+    return Math.round((temp + adjustment) * 10) / 10;
+  }
+
+  // case: 일반적인 경우 (10도 이하이면서 풍속이 약한 경우)
   return temp;
 };
 
