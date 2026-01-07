@@ -11,28 +11,55 @@ interface NewsInfo {
   summary?: string;
 }
 
+interface NewsCategory {
+  name: string;
+  url: string;
+  selector: string;
+  maxArticles: number;
+}
+
 export class DailyNews {
-  private liSelector: string =
-    '#newsct > div.section_latest > div > div.section_latest_article._CONTENT_LIST._PERSIST_META ul > li';
   private articleContentSelector: string = '#dic_area';
-  private maxArticlesToCrawl: number = 10;
   private maxMessageLength: number = 4000;
 
-  private get url(): URL {
-    return new URL('/breakingnews/section/105/230', 'https://news.naver.com');
-  }
+  private readonly categories: NewsCategory[] = [
+    {
+      name: 'IT/과학',
+      url: 'https://news.naver.com/section/105',
+      selector:
+        '#newsct > div.section_latest > div > div.section_latest_article._CONTENT_LIST._PERSIST_META ul > li',
+      maxArticles: 5,
+    },
+    {
+      name: '경제',
+      url: 'https://news.naver.com/section/101',
+      selector:
+        '#newsct > div.section_latest > div > div.section_latest_article._CONTENT_LIST._PERSIST_META ul > li',
+      maxArticles: 3,
+    },
+    {
+      name: '사회',
+      url: 'https://news.naver.com/section/102',
+      selector:
+        '#newsct > div.section_latest > div > div.section_latest_article._CONTENT_LIST._PERSIST_META ul > li',
+      maxArticles: 3,
+    },
+  ];
 
   private async getHtml(url: URL | string): Promise<AxiosResponse<string>> {
     const targetUrl = typeof url === 'string' ? url : url.href;
     return httpClient.get<string>(targetUrl);
   }
 
-  private getNewsInfoList(cheerioAPI: CheerioAPI): NewsInfo[] {
+  private getNewsInfoList(
+    cheerioAPI: CheerioAPI,
+    category: NewsCategory
+  ): NewsInfo[] {
     const result: NewsInfo[] = [];
-    const liList = cheerioAPI(this.liSelector);
+    const liList = cheerioAPI(category.selector);
 
     liList.each((_index, li) => {
-      if (result.length >= this.maxArticlesToCrawl) return false;
+      if (result.length >= category.maxArticles) return false;
 
       const a = cheerioAPI(li).find('a');
       const title = a.text().trim();
@@ -80,27 +107,57 @@ export class DailyNews {
     return sentences.slice(0, maxSentences).join('. ') + '.';
   }
 
-  private getMessagesForTelegram(newsInfoList: NewsInfo[]): string[] {
-    const newsItems = newsInfoList.map((news) => {
-      let message = `- [${news.title}](${news.url})`;
-      if (news.summary) {
-        message += `\n${news.summary}`;
-      }
-      return message;
-    });
+  private escapeMarkdown(text: string): string {
+    // 텔레그램 마크다운 링크 텍스트에서 문제가 되는 문자 대체
+    // [] -> 「」 (corner brackets)
+    // () -> （）(fullwidth parentheses)
+    // ' -> ' (right single quotation mark)
+    return text
+      .replace(/\[/g, '「')
+      .replace(/\]/g, '」')
+      .replace(/\(/g, '（')
+      .replace(/\)/g, '）')
+      .replace(/'/g, '\u2019');
+  }
 
+  private getMessagesForTelegram(
+    newsByCategory: Map<string, NewsInfo[]>
+  ): string[] {
     const messages: string[] = [];
-    let currentMessage = `IT/과학 최신 뉴스 (${dayjs().format('YYYY-MM-DD')})\n\n`;
+    let currentMessage = `📰 오늘의 뉴스 (${dayjs().format('YYYY-MM-DD')})\n`;
 
-    for (const item of newsItems) {
-      if (currentMessage.length + item.length + 2 > this.maxMessageLength) {
+    for (const [categoryName, newsInfoList] of newsByCategory) {
+      if (newsInfoList.length === 0) continue;
+
+      const sectionHeader = `\n\n📌 *${categoryName}*\n${'─'.repeat(18)}\n\n`;
+      const newsItems = newsInfoList.map((news) => {
+        const escapedTitle = this.escapeMarkdown(news.title);
+        let message = `• [${escapedTitle}](${news.url})`;
+        if (news.summary) {
+          message += `\n  ${news.summary}`;
+        }
+        return message;
+      });
+
+      // 섹션 헤더 추가
+      if (currentMessage.length + sectionHeader.length > this.maxMessageLength) {
         messages.push(currentMessage);
-        currentMessage = `(계속)\n\n${item}`;
+        currentMessage = `(계속)${sectionHeader}`;
       } else {
-        if (currentMessage.endsWith('\n\n')) {
-          currentMessage += item;
+        currentMessage += sectionHeader;
+      }
+
+      // 뉴스 아이템 추가
+      for (const item of newsItems) {
+        if (currentMessage.length + item.length + 2 > this.maxMessageLength) {
+          messages.push(currentMessage);
+          currentMessage = `(계속)\n\n${item}`;
         } else {
-          currentMessage += '\n\n' + item;
+          if (currentMessage.endsWith('\n\n') || currentMessage.endsWith('━━\n\n')) {
+            currentMessage += item;
+          } else {
+            currentMessage += '\n\n' + item;
+          }
         }
       }
     }
@@ -113,17 +170,30 @@ export class DailyNews {
   }
 
   async getDailyNews(): Promise<string[]> {
-    const html = await this.getHtml(this.url);
-    const cheerioAPI: CheerioAPI = load(html.data);
-    const newsInfoList = this.getNewsInfoList(cheerioAPI);
+    const newsByCategory = new Map<string, NewsInfo[]>();
 
-    for (const newsInfo of newsInfoList) {
-      const content = await this.getArticleContent(newsInfo.url);
-      if (content) {
-        newsInfo.summary = await this.summarizeText(content);
+    for (const category of this.categories) {
+      try {
+        const html = await this.getHtml(category.url);
+        const cheerioAPI: CheerioAPI = load(html.data);
+        const newsInfoList = this.getNewsInfoList(cheerioAPI, category);
+
+        // 각 뉴스의 요약 생성
+        for (const newsInfo of newsInfoList) {
+          const content = await this.getArticleContent(newsInfo.url);
+          if (content) {
+            newsInfo.summary = await this.summarizeText(content);
+          }
+        }
+
+        newsByCategory.set(category.name, newsInfoList);
+        logger.info(`${category.name} 뉴스 ${newsInfoList.length}개 수집 완료`);
+      } catch (error) {
+        logger.error(`${category.name} 뉴스 수집 실패`, error);
+        newsByCategory.set(category.name, []);
       }
     }
 
-    return this.getMessagesForTelegram(newsInfoList);
+    return this.getMessagesForTelegram(newsByCategory);
   }
 }
